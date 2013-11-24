@@ -1,0 +1,15 @@
+*class
+target/
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Build files
+.gradle/
+build/
