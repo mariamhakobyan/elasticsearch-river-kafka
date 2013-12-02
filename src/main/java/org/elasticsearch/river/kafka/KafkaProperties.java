@@ -18,18 +18,21 @@ package org.elasticsearch.river.kafka;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
 import org.elasticsearch.river.RiverSettings;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
 
 public class KafkaProperties extends Properties {
 
-    private static final String KAFKA_SERVER_URL = "kafkaServerURL";
-    private static final String KAFKA_SERVER_PORT = "kafkaServerPort";
+    private static final String BROKER_HOST = "brokerHost";
+    private static final String BROKER_PORT = "brokerPort";
     private static final String TOPIC = "topic";
     private static final String PARTITION = "partition";
+
+    private static final String DEFAULT_KAFKA_SERVER_URL = "localhost";
+    private static final Integer DEFAULT_KAFKA_SERVER_PORT = 9092;
+    private static final String DEFAULT_TOPIC = "default-topic";
+    private static final Integer DEFAULT_PARTITION = 0;
 
     private String topic;
     private String brokerHost;
@@ -44,31 +47,21 @@ public class KafkaProperties extends Properties {
             Map<String, Object> kafkaSettings = (Map<String, Object>) riverSettings.settings().get("kafka");
 
             topic = (String) kafkaSettings.get("topic");
-            brokerHost = XContentMapValues.nodeStringValue(kafkaSettings.get(KAFKA_SERVER_URL), "localhost");
-            brokerPort = XContentMapValues.nodeIntegerValue(kafkaSettings.get(KAFKA_SERVER_PORT), 9092);
-            partition = XContentMapValues.nodeIntegerValue(kafkaSettings.get("partition"), 0);
+            brokerHost = XContentMapValues.nodeStringValue(kafkaSettings.get(BROKER_HOST), DEFAULT_KAFKA_SERVER_URL);
+            brokerPort = XContentMapValues.nodeIntegerValue(kafkaSettings.get(BROKER_PORT), DEFAULT_KAFKA_SERVER_PORT);
+            partition = XContentMapValues.nodeIntegerValue(kafkaSettings.get("partition"), DEFAULT_PARTITION);
 
             this.setProperty(TOPIC, topic);
-            this.setProperty(KAFKA_SERVER_URL, brokerHost);
-            this.setProperty(KAFKA_SERVER_PORT, String.valueOf(brokerPort));
+            this.setProperty(BROKER_HOST, brokerHost);
+            this.setProperty(BROKER_PORT, String.valueOf(brokerPort));
             this.setProperty(PARTITION, String.valueOf(partition));
 
         } else {
-            Properties prop = new Properties();
-
-            try {
-                // Load a properties file
-                prop.load(new FileInputStream("kafka.properties"));
-
-                // Retrieve the default properties
-                brokerHost = prop.getProperty(KAFKA_SERVER_URL);
-                brokerPort = Integer.valueOf(prop.getProperty(KAFKA_SERVER_PORT));
-                topic = prop.getProperty(TOPIC);
-                partition = Integer.valueOf(prop.getProperty(PARTITION));
-
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            // Use the default properties
+            brokerHost = DEFAULT_KAFKA_SERVER_URL;
+            brokerPort = DEFAULT_KAFKA_SERVER_PORT;
+            topic = DEFAULT_TOPIC;
+            partition = DEFAULT_PARTITION;
         }
     }
 

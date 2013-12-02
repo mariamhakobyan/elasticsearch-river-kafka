@@ -44,6 +44,7 @@ public class KafkaWorker implements Runnable {
             while (true) {
 
                 // Read Kafka messages with KafkaConsumer
+
                 ByteBufferMessageSet messages = kafkaConsumer.readMessagesFromKafka();
                 Long currentOffset = kafkaConsumer.getCurrentOffset();
 

@@ -17,6 +17,7 @@ package org.elasticsearch.river.kafka;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.util.concurrent.EsExecutors;
 import org.elasticsearch.river.AbstractRiverComponent;
 import org.elasticsearch.river.River;
@@ -32,6 +33,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
     private Thread thread;
 
+    private ESLogger logger;
 
     @Inject
     protected KafkaRiver(RiverName riverName, RiverSettings settings, Client client) {
@@ -46,6 +48,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
     public void start() {
 
         try {
+            logger.info("MHA: Starting Kafka Worker...");
             KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer, logger);
 
             thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "kafka_river").newThread(kafkaWorker);
@@ -58,7 +61,6 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
     @Override
     public void close() {
-
         thread.interrupt();
     }
 }

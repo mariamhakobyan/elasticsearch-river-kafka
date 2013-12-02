@@ -54,8 +54,8 @@ public class ElasticsearchProducer {
 
     private void prepareBulkRequestBuilder(byte[] message, BulkRequestBuilder bulkRequestBuilder) throws Exception {
         if (message == null) return;
-                                                     // ??                           ???
-        bulkRequestBuilder.add(client.prepareIndex(kafkaProperties.getTopic(), kafkaProperties.getTopic()).setSource(message)); // json type
+
+        bulkRequestBuilder.add(client.prepareIndex("_river", "my_kafka_river").setSource(message));
 
         //bulkRequestBuilder.add(client.prepareIndex().setSource(message)); // json type without specifying index and type
 
