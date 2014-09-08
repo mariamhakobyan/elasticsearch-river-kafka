@@ -24,7 +24,7 @@ public class KafkaRiverPlugin extends AbstractPlugin {
 
     @Override
     public String name() {
-        return "river-kafka";
+        return "river-kafka";      // is the name of the plugin directory, which will appear in elasticsearch installation
     }
 
     @Override
@@ -33,7 +33,21 @@ public class KafkaRiverPlugin extends AbstractPlugin {
     }
 
     public void onModule(RiversModule module) {
-        module.registerRiver("kafka", KafkaRiverModule.class);
+        module.registerRiver("kafka", KafkaRiverModule.class);    // kafka is the type of river, which you must
+
+        // give as the same value when creating river via command line
+        //example
+
+//        curl -XPUT 'localhost:9200/_river/my_kafka_river/_meta' -d '{
+//        "type" : "kafka",
+//                "kafka" : {
+//                "brokerHost" : "localhost",
+//                    "brokerPort" : 9092,
+//                    "topic" : "dummy",
+//                    "partition" : 0
+//
+//                }
+//        }'
     }
 }
 

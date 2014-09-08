@@ -17,7 +17,6 @@ package org.elasticsearch.river.kafka;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.util.concurrent.EsExecutors;
 import org.elasticsearch.river.AbstractRiverComponent;
 import org.elasticsearch.river.River;
@@ -32,8 +31,6 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
     private ElasticsearchProducer elasticsearchProducer;
 
     private Thread thread;
-
-    private ESLogger logger;
 
     @Inject
     protected KafkaRiver(RiverName riverName, RiverSettings settings, Client client) {
