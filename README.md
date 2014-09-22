@@ -1,13 +1,13 @@
- * Install the plugin from target into elasticsearch plugins
+* Install the plugin from target into elasticsearch plugins
  
- ```javascript
+```javascript
 bin/plugin --url file:////path-to-zip-file/elasticsearch-river-kafka-1.0.0-SNAPSHOT-plugin.zip --install kafka-river
- ```
+```
  
- =========
+=========
 To delete the existing river:
  
- ```json
+```json
 curl -XDELETE 'localhost:9200/_river/kafka-river/'
 ```
 
