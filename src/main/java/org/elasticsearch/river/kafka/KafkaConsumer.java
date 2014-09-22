@@ -15,93 +15,69 @@
  */
 package org.elasticsearch.river.kafka;
 
-import kafka.api.FetchRequest;
-import kafka.api.FetchRequestBuilder;
-import kafka.api.PartitionOffsetRequestInfo;
-import kafka.common.TopicAndPartition;
-import kafka.javaapi.OffsetRequest;
-import kafka.javaapi.OffsetResponse;
-import kafka.javaapi.consumer.SimpleConsumer;
-import kafka.javaapi.message.ByteBufferMessageSet;
+import kafka.consumer.ConsumerConfig;
+import kafka.consumer.KafkaStream;
+import kafka.javaapi.consumer.ConsumerConnector;
 import org.elasticsearch.common.logging.ESLogger;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
-
+/**
+ * Kafka consumer, written using Kafka Consumer Group (High Level) API, opens kafka streams to be able to consume messages.
+ *
+ * @author Mariam Hakobyan
+ */
 public class KafkaConsumer {
 
-    private KafkaProperties kafkaProperties;
-    private SimpleConsumer kafkaConsumer;
-    private final String clientName;
-    private Long currentOffset;
+    private final static Integer AMOUNT_OF_THREADS_PER_CONSUMER = 1;
+    private final static String GROUP_ID = "elasticsearch-kafka-river";
+    private final static Integer CONSUMER_TIMEOUT = 15000;
 
-    private ESLogger logger;
+    private RiverProperties riverProperties;
 
-    public KafkaConsumer(KafkaProperties kafkaProperties, ESLogger logger) {
+    private List<KafkaStream<byte[], byte[]>> streams;
+    private ConsumerConnector consumer;
 
-        this.kafkaProperties = kafkaProperties;
-        this.logger = logger;
 
-        clientName = "Client_" + kafkaProperties.getTopic() + "_" + kafkaProperties.getPartition();
+    public KafkaConsumer(final RiverProperties riverProperties, final ESLogger logger) {
+        this.riverProperties = riverProperties;
 
-        kafkaConsumer = new SimpleConsumer(kafkaProperties.getBrokerHost(),
-                kafkaProperties.getBrokerPort(),
-                1000, 1024 * 1024 * 10, clientName);    // broker host, broker port, soTimeout, bufferSize, clientname
+        consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(riverProperties));
 
-        this.currentOffset = getCurrentOffset(kafkaConsumer, kafkaProperties.getTopic(), kafkaProperties.getPartition(),
-                kafka.api.OffsetRequest.EarliestTime(), clientName);
+        final Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
+        topicCountMap.put(riverProperties.getTopic(), AMOUNT_OF_THREADS_PER_CONSUMER);
+
+        final Map<String, List<KafkaStream<byte[], byte[]>>> consumerStreams = consumer.createMessageStreams(topicCountMap);
+
+        streams = consumerStreams.get(riverProperties.getTopic());
+
+        logger.info("Started kafka consumer for topic: " + riverProperties.getTopic() + " with " + streams.size() + " partitions in it.");
     }
 
-    public ByteBufferMessageSet readMessagesFromKafka() {
-        String topic = kafkaProperties.getTopic();
-        Integer partition = kafkaProperties.getPartition();
+    private ConsumerConfig createConsumerConfig(final RiverProperties riverProperties) {
+        final Properties props = new Properties();
+        props.put(RiverProperties.ZOOKEEPER_CONNECT, riverProperties.getZookeeperConnect());
+        props.put("zookeeper.connection.timeout.ms", String.valueOf(riverProperties.getZookeeperConnectionTimeout()));
+        props.put("group.id", GROUP_ID);
+        props.put("auto.commit.enable", String.valueOf(false));
+        props.put("consumer.timeout.ms", String.valueOf(CONSUMER_TIMEOUT));
 
-        FetchRequest req = new FetchRequestBuilder()
-                .clientId(clientName)
-                .addFetch(topic, partition, currentOffset, kafkaProperties.getMaxSizeOfFetchMessages())   // topic, partition, offset, maxSize
-                .build();
-        return kafkaConsumer.fetch(req).messageSet(topic, partition);  // topic, partition
+        return new ConsumerConfig(props);
     }
 
-    /**
-     * Defines where to start reading data from
-     * Helpers Available:
-     * kafka.api.OffsetRequest.EarliestTime() => finds the beginning of the data in the logs and starts streaming
-     * from there
-     * kafka.api.OffsetRequest.LatestTime()   => will only stream new messages
-     *
-     * @param consumer
-     * @param topic
-     * @param partition
-     * @param whichTime
-     * @param clientName
-     * @return
-     */
-    public long getCurrentOffset(SimpleConsumer consumer, String topic, int partition, long whichTime, String clientName) {
-        TopicAndPartition topicAndPartition = new TopicAndPartition(topic, partition);
-        Map<TopicAndPartition, PartitionOffsetRequestInfo> requestInfo = new HashMap<TopicAndPartition, PartitionOffsetRequestInfo>();
-        requestInfo.put(topicAndPartition, new PartitionOffsetRequestInfo(whichTime, 1));
-        OffsetRequest request = new kafka.javaapi.OffsetRequest(requestInfo, kafka.api.OffsetRequest.CurrentVersion(), clientName);
-        OffsetResponse response = consumer.getOffsetsBefore(request);
 
-        if (response.hasError()) {
-            System.out.println("Error fetching data Offset Data the Broker. Reason: " + response.errorCode(topic, partition));
-            return 0;
-        }
-        long[] offsets = response.offsets(topic, partition);
-        return offsets[0];
+    List<KafkaStream<byte[], byte[]>> getStreams() {
+        return streams;
     }
 
-    public KafkaProperties getKafkaProperties() {
-        return kafkaProperties;
+    RiverProperties getRiverProperties() {
+        return riverProperties;
     }
 
-    public Long getCurrentOffset() {
-        return currentOffset;
-    }
-
-    public void setCurrentOffset(Long currentOffset) {
-        this.currentOffset = currentOffset;
+    ConsumerConnector getConsumer() {
+        return consumer;
     }
 }

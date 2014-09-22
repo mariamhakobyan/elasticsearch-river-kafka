@@ -16,85 +16,101 @@
 package org.elasticsearch.river.kafka;
 
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
+import org.elasticsearch.river.RiverName;
 import org.elasticsearch.river.RiverSettings;
 
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * The properties that the client will provide while creating a river in elastic search.
+ *
+ * @author Mariam Hakobyan
+ */
+public class RiverProperties extends Properties {
 
-@Deprecated
-public class KafkaProperties extends Properties {
-
-    private static final String ZOOKEEPER_CONNECT = "zookeeper.connect";
+    /* Kakfa properties */
+    static final String ZOOKEEPER_CONNECT = "zookeeper.connect";
     private static final String ZOOKEEPER_CONNECTION_TIMEOUT = "zookeeper.connection.timeout.ms";
-    private static final String BROKER_HOST = "brokerHost";
-    private static final String BROKER_PORT = "brokerPort";
     private static final String TOPIC = "topic";
-    private static final String PARTITION = "partition";
 
     private static final String DEFAULT_ZOOKEEPER_CONNECT = "localhost";
     private static final Integer DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT = 10000;
-    private static final String DEFAULT_KAFKA_SERVER_URL = "localhost";
-    private static final Integer DEFAULT_KAFKA_SERVER_PORT = 9092;
     private static final String DEFAULT_TOPIC = "default-topic";
-    private static final Integer DEFAULT_PARTITION = 0;
+
 
     private String topic;
     private String zookeeperConnect;
     private Integer zookeeperConnectionTimeout;
-    private String brokerHost;
-    private Integer brokerPort;
-    private Integer partition;
-    private Integer maxSizeOfFetchMessages = 100;
+
+    /* Elasticsearch properties */
+    private static final String INDEX_NAME = "index";
+    private static final String MAPPING_TYPE= "type";
+    private static final String BULK_SIZE= "bulk_size";
 
 
-    public KafkaProperties(RiverSettings riverSettings) {
+    private String indexName;
+    private String typeName;
+    private Integer bulkSize;
 
+
+    public RiverProperties(RiverName riverName, RiverSettings riverSettings) {
+
+        // Extract kafka related properties
         if (riverSettings.settings().containsKey("kafka")) {
             Map<String, Object> kafkaSettings = (Map<String, Object>) riverSettings.settings().get("kafka");
 
             topic = (String) kafkaSettings.get("topic");
             zookeeperConnect = XContentMapValues.nodeStringValue(kafkaSettings.get(ZOOKEEPER_CONNECT), DEFAULT_ZOOKEEPER_CONNECT);
             zookeeperConnectionTimeout = XContentMapValues.nodeIntegerValue(kafkaSettings.get(ZOOKEEPER_CONNECTION_TIMEOUT), DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT);
-            brokerHost = XContentMapValues.nodeStringValue(kafkaSettings.get(BROKER_HOST), DEFAULT_KAFKA_SERVER_URL);
-            brokerPort = XContentMapValues.nodeIntegerValue(kafkaSettings.get(BROKER_PORT), DEFAULT_KAFKA_SERVER_PORT);
-            partition = XContentMapValues.nodeIntegerValue(kafkaSettings.get("partition"), DEFAULT_PARTITION);
-
-            this.setProperty(TOPIC, topic);
-            this.setProperty(ZOOKEEPER_CONNECT, zookeeperConnect);
-            this.setProperty(ZOOKEEPER_CONNECTION_TIMEOUT, String.valueOf(zookeeperConnectionTimeout));
-            this.setProperty(BROKER_HOST, brokerHost);
-            this.setProperty(BROKER_PORT, String.valueOf(brokerPort));
-            this.setProperty(PARTITION, String.valueOf(partition));
-
         } else {
             // Use the default properties
             zookeeperConnect = DEFAULT_ZOOKEEPER_CONNECT;
             zookeeperConnectionTimeout = DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT;
-            brokerHost = DEFAULT_KAFKA_SERVER_URL;
-            brokerPort = DEFAULT_KAFKA_SERVER_PORT;
             topic = DEFAULT_TOPIC;
-            partition = DEFAULT_PARTITION;
         }
+
+        // Extract elasticsearch related properties
+        if (riverSettings.settings().containsKey("index")) {
+            Map<String, Object> indexSettings = (Map<String, Object>) riverSettings.settings().get("index");
+            indexName = XContentMapValues.nodeStringValue(indexSettings.get("index"), riverName.name());
+            typeName = XContentMapValues.nodeStringValue(indexSettings.get("type"), "status");
+            bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get("bulk_size"), 100);
+        } else {
+            indexName = riverName.name();
+            typeName = "status";
+            bulkSize = 100;
+        }
+
+        this.setProperty(TOPIC, topic);
+        this.setProperty(ZOOKEEPER_CONNECT, zookeeperConnect);
+        this.setProperty(ZOOKEEPER_CONNECTION_TIMEOUT, String.valueOf(zookeeperConnectionTimeout));
+        this.setProperty(INDEX_NAME, indexName);
+        this.setProperty(MAPPING_TYPE, typeName);
+        this.setProperty(BULK_SIZE, String.valueOf(bulkSize));
     }
 
     String getTopic() {
         return topic;
     }
 
-    String getBrokerHost() {
-        return brokerHost;
+    String getZookeeperConnect() {
+        return zookeeperConnect;
     }
 
-    Integer getBrokerPort() {
-        return brokerPort;
+    Integer getZookeeperConnectionTimeout() {
+        return zookeeperConnectionTimeout;
     }
 
-    Integer getPartition() {
-        return partition;
+    String getIndexName() {
+        return indexName;
     }
 
-    Integer getMaxSizeOfFetchMessages() {
-        return maxSizeOfFetchMessages;
+    String getTypeName() {
+        return typeName;
+    }
+
+    Integer getBulkSize() {
+        return bulkSize;
     }
 }

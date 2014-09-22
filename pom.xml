@@ -6,10 +6,10 @@
 
     <groupId>elasticsearch-river-kafka</groupId>
     <artifactId>elasticsearch-river-kafka</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <!--<name>Kafka module for Vert.x</name>-->
+    <name>Kafka River Plugin for ElasticSearch</name>
     <description>Kafka River Plugin for ElasticSearch</description>
     <url>https://github.com/mariamhakobyan/elasticsearch-river-kafka</url>
 
@@ -48,7 +48,7 @@
 
         <!--Dependency versions-->
         <version.elasticsearch>1.3.2</version.elasticsearch>
-        <version.kafka>0.8.0-beta1</version.kafka>
+        <version.kafka>0.8.1.1</version.kafka>
         <version.scala>2.9.0</version.scala>
         <version.sl4j>1.7.2</version.sl4j>
         <version.yammer.metrics.core>2.2.0</version.yammer.metrics.core>
@@ -111,25 +111,6 @@
 
     <build>
         <plugins>
-            <!--<plugin>-->
-                <!--<artifactId>maven-assembly-plugin</artifactId>-->
-                <!--<version>${version.maven.assembly.plugin}</version>-->
-                <!--<configuration>-->
-                    <!--<outputDirectory>${project.build.directory}/releases/</outputDirectory>-->
-                    <!--<descriptors>-->
-                        <!--<descriptor>${basedir}/src/main/assembly/plugin.xml</descriptor>-->
-                    <!--</descriptors>-->
-                <!--</configuration>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<phase>package</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>single</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>

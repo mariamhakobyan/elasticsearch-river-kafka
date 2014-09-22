@@ -15,22 +15,38 @@
  */
 package org.elasticsearch.river.kafka;
 
-import kafka.javaapi.message.ByteBufferMessageSet;
+import kafka.consumer.ConsumerIterator;
+import kafka.consumer.ConsumerTimeoutException;
+import kafka.consumer.KafkaStream;
+import kafka.message.MessageAndMetadata;
 import org.elasticsearch.common.logging.ESLogger;
 
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Random;
 
+
+/**
+ *  The worker thread, which does the actual job of consuming messages from kafka and passing those to
+ *  Elastic Search producer - {@link org.elasticsearch.river.kafka.ElasticsearchProducer} to index.
+ *  Behind the scenes of kafka high level API, the worker will read the messages from different kafka brokers and
+ *  partitions.
+ */
 public class KafkaWorker implements Runnable {
 
     private KafkaConsumer kafkaConsumer;
     private ElasticsearchProducer elasticsearchProducer;
-    private KafkaProperties kafkaProperties;
-
     private ESLogger logger;
+
+    private volatile boolean consume = false;
+
+
+    /** For randomly selecting the partition of a kafka partition. */
+    private Random random = new Random();
 
 
     public KafkaWorker(KafkaConsumer kafkaConsumer, ElasticsearchProducer elasticsearchProducer, ESLogger logger) {
         this.kafkaConsumer = kafkaConsumer;
-        this.kafkaProperties = kafkaConsumer.getKafkaProperties();
         this.elasticsearchProducer = elasticsearchProducer;
         this.logger = logger;
     }
@@ -38,36 +54,76 @@ public class KafkaWorker implements Runnable {
     @Override
     public void run() {
 
-        logger.info("KafkaWorker started...");
+        logger.info("Kafka worker started...");
 
+        if (consume) {
+            logger.info("Consumer is already running, new one will not be started...");
+            return;
+        }
+
+        consume = true;
         try {
-            while (true) {
+            logger.info("Kafka consumer started!");
 
-                // Read Kafka messages with KafkaConsumer
-
-                ByteBufferMessageSet messages = kafkaConsumer.readMessagesFromKafka();
-                Long currentOffset = kafkaConsumer.getCurrentOffset();
-
-                if (messages.validBytes() > 0) {
-                    // Insert Kafka messages into elasticsearch
-                    elasticsearchProducer.writeMessagesToElasticSearch(messages);
-
-                    currentOffset += messages.validBytes();
-                    kafkaConsumer.setCurrentOffset(currentOffset);
-                } else {
-
-                    logger.debug("No messages received from Kafka for topic={}, partition={}",
-                            kafkaProperties.getTopic(), kafkaProperties.getPartition());
-
-                    Thread.sleep(1000);
-                }
+            while (consume) {
+                KafkaStream stream = chooseRandomStream(kafkaConsumer.getStreams());
+                consumePartitionMessages(stream);
             }
-        } catch (Exception ex) {
-            logger.error("Unexpected error occurred...");
-
-            throw  new RuntimeException(ex);
+        } finally {
+            logger.info("Kafka consumer has stopped!");
+            consume = false;
         }
     }
 
+    /**
+     * Consumes the messages from the partition via specified stream.
+     */
+    private void consumePartitionMessages(KafkaStream stream) {
 
+        try {
+            // by default it waits forever for message, but there is timeout configured
+            final ConsumerIterator<byte[], byte[]> consumerIterator = stream.iterator();
+
+            // Consume all the messages of the stream (partition)
+            while (consumerIterator.hasNext() && consume) {
+
+                final MessageAndMetadata messageAndMetadata = consumerIterator.next();
+
+                logMessages(messageAndMetadata);
+                elasticsearchProducer.writeMessagesToElasticSearch(messageAndMetadata);
+
+                kafkaConsumer.getConsumer().commitOffsets();
+            }
+        } catch (ConsumerTimeoutException ex) {
+            logger.info("Nothing to be consumed for now. Consume flag is: " + consume);
+        }
+    }
+
+    /**
+     * Chooses a random stream to consume messages from, from the given list of all streams.
+     *
+     * @return  randomly choosen stream
+     */
+    private KafkaStream chooseRandomStream(List<KafkaStream<byte[], byte[]>> streams) {
+        final int streamNumber = random.nextInt(streams.size());
+
+        logger.info("Selected stream " + streamNumber + " out of  " + streams.size() + " from TOPIC: " + kafkaConsumer.getRiverProperties().getTopic());
+
+        return streams.get(streamNumber);
+    }
+
+    /**
+     * Logs consumed kafka messages to the log.
+     */
+    private void logMessages(MessageAndMetadata messageAndMetadata) {
+        byte[] messageBytes = (byte []) messageAndMetadata.message();
+
+        try {
+            String message = new String(messageBytes, "UTF-8");
+
+            logger.info(message);
+        } catch (UnsupportedEncodingException e) {
+            logger.info("The UTF-8 charset is not supported for the kafka message");
+        }
+    }
 }

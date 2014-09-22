@@ -26,29 +26,28 @@ import org.elasticsearch.river.RiverSettings;
 
 public class KafkaRiver extends AbstractRiverComponent implements River {
 
-    private KafkaProperties kafkaProperties;
     private KafkaConsumer kafkaConsumer;
     private ElasticsearchProducer elasticsearchProducer;
 
     private Thread thread;
 
     @Inject
-    protected KafkaRiver(RiverName riverName, RiverSettings settings, Client client) {
-        super(riverName, settings);
+    protected KafkaRiver(RiverName riverName, RiverSettings riverSettings, Client client) {
+        super(riverName, riverSettings);
 
-        kafkaProperties = new KafkaProperties(settings);
-        kafkaConsumer = new KafkaConsumer(kafkaProperties, logger);
-        elasticsearchProducer = new ElasticsearchProducer(client, kafkaProperties, logger);
+        final RiverProperties riverProperties = new RiverProperties(riverName, riverSettings);
+        kafkaConsumer = new KafkaConsumer(riverProperties, logger);
+        elasticsearchProducer = new ElasticsearchProducer(client, riverProperties, logger);
     }
 
     @Override
     public void start() {
 
         try {
-            logger.info("MHA: Starting Kafka Worker...");
-            KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer, logger);
+            logger.info("Starting Kafka Worker...");
+            final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer, logger);
 
-            thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "kafka_river").newThread(kafkaWorker);
+            thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "kafka-river").newThread(kafkaWorker);
             thread.start();
         } catch (Exception ex) {
             logger.error("Unexpected Error occurred", ex);
