@@ -7,21 +7,36 @@ To install the river
 * Install the plugin from target into elasticsearch plugins
 
 ```javascript
-bin/plugin --url file:////path-to-jar/elasticsearch-river-kafka-1.0-SNAPSHOT.jar --install kafka-river
+bin/plugin --url file:////path-to-zip-file/elasticsearch-river-kafka-1.0.0-SNAPSHOT-plugin.zip --install kafka-river
 ```
 
 =========
-To start the river
+To delete the existing river:
 
 ```json
-curl -XPUT 'localhost:9200/_river/my_kafka_river/_meta' -d '{
+curl -XDELETE 'localhost:9200/_river/kafka-river/'
+```
+
+To start the river:
+
+```json
+curl -XPUT 'localhost:9200/_river/kafka-river/_meta' -d '
+{
     "type" : "kafka",
     "kafka" : {
-        "brokerHost" : "localhost", 
-        "brokerPort" : 9092,
-        "topic" : "test_topic",
-        "partition" : 0
-
+        "zookeeper.connect" : "localhost", 
+        "zookeeper.connection.timeout.ms" : 10000,
+        "topic" : "river"
+    },
+    "index" : {
+        "index" : "kafka-index",
+        "type" : "messages"
     }
 }'
+```
+
+To see the indexed data:
+
+```json
+curl -XGET 'localhost:9200/kafka-index/_search?pretty=1'
 ```
