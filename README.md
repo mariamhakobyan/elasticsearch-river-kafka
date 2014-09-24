@@ -20,7 +20,7 @@ Setup
 
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/1.1.0/elasticsearch-river-kafka-1.0.0-plugin.zip
+.bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/1.0.0/elasticsearch-river-kafka-1.0.0-plugin.zip
 ```
 
 If it doesn't work, clone git repository and build plugin manually.
