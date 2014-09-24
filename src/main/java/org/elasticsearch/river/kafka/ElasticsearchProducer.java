@@ -56,12 +56,12 @@ public class ElasticsearchProducer {
                 new BulkProcessor.Listener() {
                     @Override
                     public void beforeBulk(long executionId, BulkRequest request) {
-                        logger.info("Going to execute bulk request composed of {} actions", request.numberOfActions());
+                        logger.info("Going to execute bulk request composed of {} actions.", request.numberOfActions());
                     }
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-                        logger.info("Executed bulk composed of {} actions", request.numberOfActions());
+                        logger.info("Executed bulk composed of {} actions.", request.numberOfActions());
 
                         // Commit the kafka messages offset, only when messages have been successfully
                         // inserted into elasticsearch
@@ -70,7 +70,7 @@ public class ElasticsearchProducer {
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-                        logger.warn("Error executing bulk", failure);
+                        logger.warn("Error executing bulk.", failure);
                     }
                 })
                 .setBulkActions(riverConfig.getBulkSize())
@@ -107,5 +107,9 @@ public class ElasticsearchProducer {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public void closeBulkProcessor() {
+        bulkProcessor.close();
     }
 }

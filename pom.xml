@@ -50,10 +50,11 @@
         <!--Dependency versions-->
         <version.elasticsearch>1.3.2</version.elasticsearch>
         <version.kafka>0.8.1.1</version.kafka>
-        <version.scala>2.10.4</version.scala>
-        <version.slf4j>1.7.7</version.slf4j>
+        <version.scala>2.9.0</version.scala>
+        <version.slf4j>1.7.2</version.slf4j>
         <version.yammer.metrics.core>2.2.0</version.yammer.metrics.core>
         <version.yammer.metrics.graphite>2.2.0</version.yammer.metrics.graphite>
+        <version.json>20131018</version.json>
 
         <!--Plugin versions-->
         <version.maven.compiler.plugin>3.0</version.maven.compiler.plugin>
@@ -100,6 +101,12 @@
             <groupId>com.yammer.metrics</groupId>
             <artifactId>metrics-graphite</artifactId>
             <version>${version.yammer.metrics.graphite}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>${version.json}</version>
         </dependency>
     </dependencies>
 

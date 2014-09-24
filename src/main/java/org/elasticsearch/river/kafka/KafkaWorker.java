@@ -67,7 +67,7 @@ public class KafkaWorker implements Runnable {
 
         consume = true;
         try {
-            logger.info("Kafka consumer started!");
+            logger.info("Kafka consumer started...");
 
             while (consume) {
                 KafkaStream stream = chooseRandomStream(kafkaConsumer.getStreams());
@@ -76,7 +76,7 @@ public class KafkaWorker implements Runnable {
                 elasticsearchProducer.addMessagesToBulkProcessor(consumedMessages);
             }
         } finally {
-            logger.info("Kafka consumer has stopped!");
+            logger.info("Kafka consumer has stopped...");
             consume = false;
         }
     }
@@ -113,7 +113,7 @@ public class KafkaWorker implements Runnable {
     private KafkaStream chooseRandomStream(final List<KafkaStream<byte[], byte[]>> streams) {
         final int streamNumber = random.nextInt(streams.size());
 
-        logger.info("Selected stream " + streamNumber + " out of  " + streams.size() + " from TOPIC: " + kafkaConsumer.getRiverConfig().getTopic());
+//        logger.info("Selected stream " + streamNumber + " out of  " + streams.size() + " from TOPIC: " + kafkaConsumer.getRiverConfig().getTopic());
 
         return streams.get(streamNumber);
     }
@@ -129,7 +129,7 @@ public class KafkaWorker implements Runnable {
 
             logger.info(message);
         } catch (UnsupportedEncodingException e) {
-            logger.info("The UTF-8 charset is not supported for the kafka message");
+            logger.info("The UTF-8 charset is not supported for the kafka message.");
         }
     }
 }

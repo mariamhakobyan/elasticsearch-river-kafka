@@ -46,10 +46,10 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
     public void start() {
 
         try {
-            logger.info("Starting Kafka Worker...");
+            logger.info("Starting Kafka River...");
             final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer);
 
-            thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "kafka-river").newThread(kafkaWorker);
+            thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "Kafka River Worker").newThread(kafkaWorker);
             thread.start();
         } catch (Exception ex) {
             logger.error("Unexpected Error occurred", ex);
@@ -59,6 +59,10 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
     @Override
     public void close() {
+        logger.info("Closing kafka river...");
+
+        elasticsearchProducer.closeBulkProcessor();
+
         thread.interrupt();
     }
 }
