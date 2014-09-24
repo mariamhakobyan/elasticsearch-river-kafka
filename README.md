@@ -20,7 +20,9 @@ curl -XPUT 'localhost:9200/_river/kafka-river/_meta' -d '
      "kafka" : {
         "zookeeper.connect" : "localhost", 
         "zookeeper.connection.timeout.ms" : 10000,
-        "topic" : "river"
+        "topic" : "river",
+        "bulk_size" : 5,
+        "concurrent_requests" : 1
     },
     "index" : {
         "index" : "kafka-index",
