@@ -33,22 +33,21 @@ public class RiverConfig {
     private static final String ZOOKEEPER_CONNECTION_TIMEOUT = "zookeeper.connection.timeout.ms";
     private static final String TOPIC = "topic";
 
-    private static final String DEFAULT_ZOOKEEPER_CONNECT = "localhost";
-    private static final int DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT = 10000;
-    private static final String DEFAULT_TOPIC = "default-topic";
-
-
-    private String topic;
-    private String zookeeperConnect;
-    private int zookeeperConnectionTimeout;
-
     /* Elasticsearch config */
     private static final String INDEX_NAME = "index";
     private static final String MAPPING_TYPE = "type";
-    private static final String BULK_SIZE = "bulk_size";
-    private static final String CONCURRENT_REQUESTS = "concurrent_requests";
+    private static final String BULK_SIZE = "bulk.size";
+    private static final String CONCURRENT_REQUESTS = "concurrent.requests";
+
+    /* Default values */
+    private static final String DEFAULT_ZOOKEEPER_CONNECT = "localhost";
+    private static final int DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT = 10000;
+    private static final String DEFAULT_TOPIC = "elasticsearch-river-kafka";
 
 
+    private String zookeeperConnect;
+    private int zookeeperConnectionTimeout;
+    private String topic;
     private String indexName;
     private String typeName;
     private int bulkSize;
@@ -61,7 +60,7 @@ public class RiverConfig {
         if (riverSettings.settings().containsKey("kafka")) {
             Map<String, Object> kafkaSettings = (Map<String, Object>) riverSettings.settings().get("kafka");
 
-            topic = (String) kafkaSettings.get("topic");
+            topic = (String) kafkaSettings.get(TOPIC);
             zookeeperConnect = XContentMapValues.nodeStringValue(kafkaSettings.get(ZOOKEEPER_CONNECT), DEFAULT_ZOOKEEPER_CONNECT);
             zookeeperConnectionTimeout = XContentMapValues.nodeIntegerValue(kafkaSettings.get(ZOOKEEPER_CONNECTION_TIMEOUT), DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT);
         } else {

@@ -24,6 +24,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
 import java.util.Set;
@@ -73,7 +74,7 @@ public class ElasticsearchProducer {
                     }
                 })
                 .setBulkActions(riverConfig.getBulkSize())
-//                .setFlushInterval(TimeValue.timeValueSeconds(1))
+                .setFlushInterval(TimeValue.timeValueHours(12))
                 .setConcurrentRequests(riverConfig.getConcurrentRequests())
                 .build();
     }
