@@ -17,7 +17,6 @@
         <license>
             <name>Apache License 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-            <distribution>repo</distribution>
         </license>
     </licenses>
 
@@ -31,6 +30,8 @@
     <developers>
         <developer>
             <name>Mariam Hakobyan</name>
+            <email>mariam.hak@gmail.com</email>
+            <organizationUrl>http://www.mariam-hakobyan.com</organizationUrl>
         </developer>
     </developers>
 
