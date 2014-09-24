@@ -32,7 +32,7 @@ cd $ELASTICSEARCH_HOME
 .bin/plugin --install kafka-river --url file:////$PLUGIN-PATH/elasticsearch-river-kafka-1.0.0-SNAPSHOT-plugin.zip
 ```
 
-3. Update installed plugin
+Update installed plugin
 
 ```sh
 cd $ELASTICSEARCH_HOME
