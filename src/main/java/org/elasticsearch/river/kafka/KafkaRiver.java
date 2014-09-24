@@ -23,7 +23,9 @@ import org.elasticsearch.river.River;
 import org.elasticsearch.river.RiverName;
 import org.elasticsearch.river.RiverSettings;
 
-
+/**
+ * This is the actual river implementation, which starts a thread to read messages from kafka and put them into elasticsearch.
+ */
 public class KafkaRiver extends AbstractRiverComponent implements River {
 
     private KafkaConsumer kafkaConsumer;
@@ -32,12 +34,12 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
     private Thread thread;
 
     @Inject
-    protected KafkaRiver(RiverName riverName, RiverSettings riverSettings, Client client) {
+    protected KafkaRiver(final RiverName riverName, final RiverSettings riverSettings, final Client client) {
         super(riverName, riverSettings);
 
-        final RiverProperties riverProperties = new RiverProperties(riverName, riverSettings);
-        kafkaConsumer = new KafkaConsumer(riverProperties, logger);
-        elasticsearchProducer = new ElasticsearchProducer(client, riverProperties, logger);
+        final RiverConfig riverConfig = new RiverConfig(riverName, riverSettings);
+        kafkaConsumer = new KafkaConsumer(riverConfig);
+        elasticsearchProducer = new ElasticsearchProducer(client, riverConfig, kafkaConsumer);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
         try {
             logger.info("Starting Kafka Worker...");
-            final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer, logger);
+            final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer);
 
             thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "kafka-river").newThread(kafkaWorker);
             thread.start();

@@ -20,35 +20,39 @@ import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.message.MessageAndMetadata;
 import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 
 /**
- *  The worker thread, which does the actual job of consuming messages from kafka and passing those to
- *  Elastic Search producer - {@link org.elasticsearch.river.kafka.ElasticsearchProducer} to index.
- *  Behind the scenes of kafka high level API, the worker will read the messages from different kafka brokers and
- *  partitions.
+ * The worker thread, which does the actual job of consuming messages from kafka and passing those to
+ * Elastic Search producer - {@link org.elasticsearch.river.kafka.ElasticsearchProducer} to index.
+ * Behind the scenes of kafka high level API, the worker will read the messages from different kafka brokers and
+ * partitions.
  */
 public class KafkaWorker implements Runnable {
 
     private KafkaConsumer kafkaConsumer;
     private ElasticsearchProducer elasticsearchProducer;
-    private ESLogger logger;
 
     private volatile boolean consume = false;
 
+    private final ESLogger logger = ESLoggerFactory.getLogger(KafkaWorker.class.getName());
 
-    /** For randomly selecting the partition of a kafka partition. */
+    /**
+     * For randomly selecting the partition of a kafka partition.
+     */
     private Random random = new Random();
 
 
-    public KafkaWorker(KafkaConsumer kafkaConsumer, ElasticsearchProducer elasticsearchProducer, ESLogger logger) {
+    public KafkaWorker(final KafkaConsumer kafkaConsumer, final ElasticsearchProducer elasticsearchProducer) {
         this.kafkaConsumer = kafkaConsumer;
         this.elasticsearchProducer = elasticsearchProducer;
-        this.logger = logger;
     }
 
     @Override
@@ -67,7 +71,9 @@ public class KafkaWorker implements Runnable {
 
             while (consume) {
                 KafkaStream stream = chooseRandomStream(kafkaConsumer.getStreams());
-                consumePartitionMessages(stream);
+                Set<MessageAndMetadata> consumedMessages = consumePartitionMessages(stream);
+
+                elasticsearchProducer.addMessagesToBulkProcessor(consumedMessages);
             }
         } finally {
             logger.info("Kafka consumer has stopped!");
@@ -78,7 +84,8 @@ public class KafkaWorker implements Runnable {
     /**
      * Consumes the messages from the partition via specified stream.
      */
-    private void consumePartitionMessages(KafkaStream stream) {
+    private Set<MessageAndMetadata> consumePartitionMessages(final KafkaStream stream) {
+        final Set<MessageAndMetadata> messageSet = new HashSet<MessageAndMetadata>();
 
         try {
             // by default it waits forever for message, but there is timeout configured
@@ -88,26 +95,25 @@ public class KafkaWorker implements Runnable {
             while (consumerIterator.hasNext() && consume) {
 
                 final MessageAndMetadata messageAndMetadata = consumerIterator.next();
+                logMessage(messageAndMetadata);
 
-                logMessages(messageAndMetadata);
-                elasticsearchProducer.writeMessagesToElasticSearch(messageAndMetadata);
-
-                kafkaConsumer.getConsumer().commitOffsets();
+                messageSet.add(messageAndMetadata);
             }
         } catch (ConsumerTimeoutException ex) {
             logger.info("Nothing to be consumed for now. Consume flag is: " + consume);
         }
+        return messageSet;
     }
 
     /**
      * Chooses a random stream to consume messages from, from the given list of all streams.
      *
-     * @return  randomly choosen stream
+     * @return randomly choosen stream
      */
-    private KafkaStream chooseRandomStream(List<KafkaStream<byte[], byte[]>> streams) {
+    private KafkaStream chooseRandomStream(final List<KafkaStream<byte[], byte[]>> streams) {
         final int streamNumber = random.nextInt(streams.size());
 
-        logger.info("Selected stream " + streamNumber + " out of  " + streams.size() + " from TOPIC: " + kafkaConsumer.getRiverProperties().getTopic());
+        logger.info("Selected stream " + streamNumber + " out of  " + streams.size() + " from TOPIC: " + kafkaConsumer.getRiverConfig().getTopic());
 
         return streams.get(streamNumber);
     }
@@ -115,11 +121,11 @@ public class KafkaWorker implements Runnable {
     /**
      * Logs consumed kafka messages to the log.
      */
-    private void logMessages(MessageAndMetadata messageAndMetadata) {
-        byte[] messageBytes = (byte []) messageAndMetadata.message();
+    private void logMessage(final MessageAndMetadata messageAndMetadata) {
+        final byte[] messageBytes = (byte[]) messageAndMetadata.message();
 
         try {
-            String message = new String(messageBytes, "UTF-8");
+            final String message = new String(messageBytes, "UTF-8");
 
             logger.info(message);
         } catch (UnsupportedEncodingException e) {
