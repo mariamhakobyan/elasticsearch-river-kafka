@@ -22,7 +22,7 @@ Setup
 cd $ELASTICSEARCH_HOME
 .bin/plugin -install <plugin-name> -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.0.0/elasticsearch-river-kafka-1.0.0-plugin.zip
 ```
-Example:
+*Example:*
 ```sh
 cd $ELASTICSEARCH_HOME
 .bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.0.0/elasticsearch-river-kafka-1.0.0-plugin.zip
@@ -67,7 +67,9 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
      }
  }'
  ```
- Example:
+ * ***NOTE***: Type "kafka" is required and must not be changed. It corresponds the type, given in the source code, by which elasticsearch is able to associate created river with the installed plugin.
+ 
+ *Example:*
 
  ```json
  curl -XPUT 'localhost:9200/_river/kafka-river/_meta' -d '
@@ -107,7 +109,7 @@ To delete the existing river, execute:
 curl -XDELETE 'localhost:9200/_river/<river-name>/'
 ``` 
 
-Example: 
+*Example:*
 ```json
 curl -XDELETE 'localhost:9200/_river/kafka-river/'
 ``` 
