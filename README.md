@@ -20,7 +20,12 @@ Setup
 
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/1.0.0/elasticsearch-river-kafka-1.0.0-plugin.zip
+.bin/plugin -install <plugin-name> -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.0.0/elasticsearch-river-kafka-1.0.0-plugin.zip
+```
+Example:
+```sh
+cd $ELASTICSEARCH_HOME
+.bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.0.0/elasticsearch-river-kafka-1.0.0-plugin.zip
 ```
 
 If it doesn't work, clone git repository and build plugin manually.
@@ -29,15 +34,15 @@ If it doesn't work, clone git repository and build plugin manually.
  
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin --install kafka-river --url file:////$PLUGIN-PATH/elasticsearch-river-kafka-1.0.0-SNAPSHOT-plugin.zip
+.bin/plugin --install <plugin-name> --url file:////$PLUGIN-PATH/elasticsearch-river-kafka-1.0.0-SNAPSHOT-plugin.zip
 ```
 
 Update installed plugin
 
 ```sh
 cd $ELASTICSEARCH_HOME
-./bin/plugin -remove kafka-river
-./bin/plugin -url file:/$PLUGIN_PATH -install kafka-river
+./bin/plugin -remove <plugin-name>
+./bin/plugin -url file:/$PLUGIN_PATH -install <plugin-name>
 ```
 
 Configuration
