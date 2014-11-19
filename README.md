@@ -7,7 +7,7 @@ The Kafka River also supports consuming messages from multiple Kafka brokers and
 
 The plugin uses the latest Kafka and Elasticsearch version.
  * Kafka version 0.8.1.1
- * Elasticsearch version 1.3.2
+ * Elasticsearch version 1.4.0
 
 The plugin is periodically updated, if there are newer versions of any dependencies.
 
