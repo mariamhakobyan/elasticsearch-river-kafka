@@ -62,6 +62,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
         logger.info("Closing kafka river...");
 
         elasticsearchProducer.closeBulkProcessor();
+        kafkaConsumer.shutdown();
 
         thread.interrupt();
     }

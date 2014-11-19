@@ -65,7 +65,7 @@ public class ElasticsearchProducer {
 
                         // Commit the kafka messages offset, only when messages have been successfully
                         // inserted into elasticsearch
-                        kafkaConsumer.getConsumer().commitOffsets();
+                        kafkaConsumer.getConsumerConnector().commitOffsets();
                     }
 
                     @Override

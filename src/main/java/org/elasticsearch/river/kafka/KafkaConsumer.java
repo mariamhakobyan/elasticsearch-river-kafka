@@ -37,23 +37,20 @@ public class KafkaConsumer {
     private final static String GROUP_ID = "elasticsearch-kafka-river";
     private final static Integer CONSUMER_TIMEOUT = 15000;
 
-    private RiverConfig riverConfig;
-
     private List<KafkaStream<byte[], byte[]>> streams;
-    private ConsumerConnector consumer;
+    private ConsumerConnector consumerConnector;
 
     private final ESLogger logger = ESLoggerFactory.getLogger(KafkaConsumer.class.getName());
 
 
     public KafkaConsumer(final RiverConfig riverConfig) {
-        this.riverConfig = riverConfig;
-
-        consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(riverConfig));
+        consumerConnector = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(riverConfig));
 
         final Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
         topicCountMap.put(riverConfig.getTopic(), AMOUNT_OF_THREADS_PER_CONSUMER);
 
-        final Map<String, List<KafkaStream<byte[], byte[]>>> consumerStreams = consumer.createMessageStreams(topicCountMap);
+        final Map<String, List<KafkaStream<byte[], byte[]>>> consumerStreams =
+                consumerConnector.createMessageStreams(topicCountMap);
 
         streams = consumerStreams.get(riverConfig.getTopic());
 
@@ -71,16 +68,17 @@ public class KafkaConsumer {
         return new ConsumerConfig(props);
     }
 
+    public void shutdown() {
+        if (consumerConnector != null) {
+            consumerConnector.shutdown();
+        }
+    }
 
     List<KafkaStream<byte[], byte[]>> getStreams() {
         return streams;
     }
 
-    RiverConfig getRiverConfig() {
-        return riverConfig;
-    }
-
-    ConsumerConnector getConsumer() {
-        return consumer;
+    ConsumerConnector getConsumerConnector() {
+        return consumerConnector;
     }
 }
