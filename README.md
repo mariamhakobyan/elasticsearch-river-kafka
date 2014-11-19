@@ -121,6 +121,11 @@ To see the indexed data:
 curl -XGET 'localhost:9200/kafka-index/_search?pretty=1'
 ```
 
+To delete the index:
+```json
+curl -XDELETE 'localhost:9200/kafka-index'
+```
+
 Kafka Consumer details
 =========
 
