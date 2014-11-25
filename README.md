@@ -10,6 +10,7 @@ The plugin uses the latest Kafka and Elasticsearch version.
  * Elasticsearch version 1.4.0
 
 The plugin is periodically updated, if there are newer versions of any dependencies.
+It is available in the [ElasticSearch's official website](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html).
 
 Setup
 ==========
