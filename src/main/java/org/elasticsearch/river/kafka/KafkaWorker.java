@@ -19,6 +19,7 @@ import kafka.consumer.ConsumerIterator;
 import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.message.MessageAndMetadata;
+import org.elasticsearch.common.collect.Sets;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 
@@ -39,6 +40,7 @@ public class KafkaWorker implements Runnable {
 
     private KafkaConsumer kafkaConsumer;
     private ElasticsearchProducer elasticsearchProducer;
+    private RiverConfig riverConfig;
 
     private volatile boolean consume = false;
 
@@ -50,9 +52,12 @@ public class KafkaWorker implements Runnable {
     private Random random = new Random();
 
 
-    public KafkaWorker(final KafkaConsumer kafkaConsumer, final ElasticsearchProducer elasticsearchProducer) {
+    public KafkaWorker(final KafkaConsumer kafkaConsumer,
+                       final ElasticsearchProducer elasticsearchProducer,
+                        final RiverConfig riverConfig) {
         this.kafkaConsumer = kafkaConsumer;
         this.elasticsearchProducer = elasticsearchProducer;
+        this.riverConfig = riverConfig;
     }
 
     @Override
@@ -71,9 +76,7 @@ public class KafkaWorker implements Runnable {
 
             while (consume) {
                 KafkaStream stream = chooseRandomStream(kafkaConsumer.getStreams());
-                Set<MessageAndMetadata> consumedMessages = consumePartitionMessages(stream);
-
-                elasticsearchProducer.addMessagesToBulkProcessor(consumedMessages);
+                consumeMessagesAndAddToBulkProcessor(stream);
             }
         } finally {
             logger.info("Kafka consumer has stopped...");
@@ -84,8 +87,9 @@ public class KafkaWorker implements Runnable {
     /**
      * Consumes the messages from the partition via specified stream.
      */
-    private Set<MessageAndMetadata> consumePartitionMessages(final KafkaStream stream) {
-        final Set<MessageAndMetadata> messageSet = new HashSet<MessageAndMetadata>();
+    private void consumeMessagesAndAddToBulkProcessor(final KafkaStream stream) {
+        Set<MessageAndMetadata> messageSet = Sets.newHashSet();
+        long counter = 0;
 
         try {
             // by default it waits forever for message, but there is timeout configured
@@ -98,11 +102,22 @@ public class KafkaWorker implements Runnable {
                 logMessage(messageAndMetadata);
 
                 messageSet.add(messageAndMetadata);
+                counter++;
+
+                if(counter >= riverConfig.getBulkSize()) {
+                    elasticsearchProducer.addMessagesToBulkProcessor(messageSet);
+                    messageSet = Sets.newHashSet();
+                    counter = 0;
+                }
             }
         } catch (ConsumerTimeoutException ex) {
             logger.info("Nothing to be consumed for now. Consume flag is: " + consume);
+        } finally {
+            
+            if(messageSet.size() > 0) {
+                elasticsearchProducer.addMessagesToBulkProcessor(messageSet);
+            }
         }
-        return messageSet;
     }
 
     /**

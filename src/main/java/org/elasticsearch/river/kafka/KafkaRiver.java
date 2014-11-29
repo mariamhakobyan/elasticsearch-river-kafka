@@ -30,6 +30,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
     private KafkaConsumer kafkaConsumer;
     private ElasticsearchProducer elasticsearchProducer;
+    private RiverConfig riverConfig;
 
     private Thread thread;
 
@@ -37,7 +38,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
     protected KafkaRiver(final RiverName riverName, final RiverSettings riverSettings, final Client client) {
         super(riverName, riverSettings);
 
-        final RiverConfig riverConfig = new RiverConfig(riverName, riverSettings);
+        riverConfig = new RiverConfig(riverName, riverSettings);
         kafkaConsumer = new KafkaConsumer(riverConfig);
         elasticsearchProducer = new ElasticsearchProducer(client, riverConfig, kafkaConsumer);
     }
@@ -47,7 +48,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
         try {
             logger.info("Starting Kafka River...");
-            final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer);
+            final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer, riverConfig);
 
             thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "Kafka River Worker").newThread(kafkaWorker);
             thread.start();
