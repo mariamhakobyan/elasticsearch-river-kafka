@@ -38,6 +38,8 @@ public class RiverConfig {
     private static final String MAPPING_TYPE = "type";
     private static final String BULK_SIZE = "bulk.size";
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
+    private static final String KAFKA_MESSAGE_JSON = "kafka.message.json";
+    private static final String LOG_KAFKA_MESSAGE = "log.kafka.message";
 
     /* Default values */
     private static final String DEFAULT_ZOOKEEPER_CONNECT = "localhost";
@@ -52,7 +54,8 @@ public class RiverConfig {
     private String typeName;
     private int bulkSize;
     private int concurrentRequests;
-
+    private Boolean kafkaMessageJson;
+    private Boolean logKafkaMessage;
 
     public RiverConfig(RiverName riverName, RiverSettings riverSettings) {
 
@@ -76,11 +79,15 @@ public class RiverConfig {
             typeName = XContentMapValues.nodeStringValue(indexSettings.get(MAPPING_TYPE), "status");
             bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get(BULK_SIZE), 100);
             concurrentRequests = XContentMapValues.nodeIntegerValue(indexSettings.get(CONCURRENT_REQUESTS), 1);
+            kafkaMessageJson = XContentMapValues.nodeBooleanValue(indexSettings.get(KAFKA_MESSAGE_JSON), Boolean.FALSE);
+            logKafkaMessage = XContentMapValues.nodeBooleanValue(indexSettings.get(LOG_KAFKA_MESSAGE), Boolean.TRUE);
         } else {
             indexName = riverName.name();
             typeName = "status";
             bulkSize = 100;
             concurrentRequests = 1;
+            kafkaMessageJson = false;
+            logKafkaMessage = true;
         }
     }
 
@@ -110,5 +117,13 @@ public class RiverConfig {
 
     int getConcurrentRequests() {
         return concurrentRequests;
+    }
+
+    Boolean getKafkaMessageJson() {
+        return kafkaMessageJson;
+    }
+
+    Boolean getLogKafkaMessage() {
+        return logKafkaMessage;
     }
 }

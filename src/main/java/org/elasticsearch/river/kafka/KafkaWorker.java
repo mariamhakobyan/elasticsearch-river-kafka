@@ -99,7 +99,9 @@ public class KafkaWorker implements Runnable {
             while (consumerIterator.hasNext() && consume) {
 
                 final MessageAndMetadata messageAndMetadata = consumerIterator.next();
-                logMessage(messageAndMetadata);
+                if (riverConfig.getLogKafkaMessage()) {
+                    logMessage(messageAndMetadata);
+                }
 
                 messageSet.add(messageAndMetadata);
                 counter++;

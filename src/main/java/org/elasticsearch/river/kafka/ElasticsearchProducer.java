@@ -87,6 +87,8 @@ public class ElasticsearchProducer {
      */
     public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
 
+        String msg;
+
         for (MessageAndMetadata messageAndMetadata : messageSet) {
             final byte[] messageBytes = (byte[]) messageAndMetadata.message();
 
@@ -94,13 +96,21 @@ public class ElasticsearchProducer {
 
             try {
                 // TODO - future improvement - support for protobuf messages
+
+                // Treat the Kafka message as JSON or a String
+                if (riverConfig.getKafkaMessageJson()) {
+                    msg = new String(messageBytes, "UTF-8");
+                } else {
+                    msg = (String) XContentFactory.jsonBuilder()
+                        .startObject()
+                        .field("value", new String(messageBytes, "UTF-8"))
+                        .endObject()
+                        .string();
+                }
                 final IndexRequest request = Requests.indexRequest(riverConfig.getIndexName()).
                         type(riverConfig.getTypeName()).
                         id(UUID.randomUUID().toString()).
-                        source(XContentFactory.jsonBuilder()
-                                .startObject()
-                                .field("value", new String(messageBytes, "UTF-8"))
-                                .endObject());
+                        source(msg);
 
                 bulkProcessor.add(request);
             } catch (Exception ex) {
