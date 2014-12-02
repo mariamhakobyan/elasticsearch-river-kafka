@@ -56,12 +56,12 @@ public class ElasticsearchProducer {
                 new BulkProcessor.Listener() {
                     @Override
                     public void beforeBulk(long executionId, BulkRequest request) {
-                        logger.info("Going to execute bulk request composed of {} actions.", request.numberOfActions());
+                        logger.info("Index: " + riverConfig.getIndexName() + ": Executing bulk request composed of {} actions.", request.numberOfActions());
                     }
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-                        logger.info("Executed bulk composed of {} actions.", request.numberOfActions());
+                        logger.info("Index: " + riverConfig.getIndexName() + ": Executed bulk composed of {} actions.", request.numberOfActions());
 
                         // Commit the kafka messages offset, only when messages have been successfully
                         // inserted into elasticsearch
@@ -70,7 +70,7 @@ public class ElasticsearchProducer {
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-                        logger.warn("Error executing bulk.", failure);
+                        logger.warn("Index: " + riverConfig.getIndexName() + ": Error executing bulk.", failure);
                     }
                 })
                 .setBulkActions(riverConfig.getBulkSize())
@@ -87,6 +87,8 @@ public class ElasticsearchProducer {
      */
     public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
 
+        String msg;
+
         for (MessageAndMetadata messageAndMetadata : messageSet) {
             final byte[] messageBytes = (byte[]) messageAndMetadata.message();
 
@@ -94,13 +96,21 @@ public class ElasticsearchProducer {
 
             try {
                 // TODO - future improvement - support for protobuf messages
+
+                // Treat the Kafka message as JSON or a String
+                if (riverConfig.getKafkaMessageJson()) {
+                    msg = new String(messageBytes, "UTF-8");
+                } else {
+                    msg = (String) XContentFactory.jsonBuilder()
+                        .startObject()
+                        .field("value", new String(messageBytes, "UTF-8"))
+                        .endObject()
+                        .string();
+                }
                 final IndexRequest request = Requests.indexRequest(riverConfig.getIndexName()).
                         type(riverConfig.getTypeName()).
                         id(UUID.randomUUID().toString()).
-                        source(XContentFactory.jsonBuilder()
-                                .startObject()
-                                .field("value", new String(messageBytes, "UTF-8"))
-                                .endObject());
+                        source(msg);
 
                 bulkProcessor.add(request);
             } catch (Exception ex) {

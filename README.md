@@ -64,7 +64,9 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
         "index" : <index-name>,
         "type" : <mapping-type-name>,
         "bulk.size" : <bulk.size>,
-        "concurrent.requests" : <concurrent.requests>
+        "concurrent.requests" : <concurrent.requests>,
+        "kafka.message.json" : <kafka.message.json>,
+        "log.kafka.message" : <log.kafka.message>
      }
  }'
  ```
@@ -85,7 +87,9 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
          "index" : "kafka-index",
          "type" : "status",
          "bulk.size" : 100,
-         "concurrent.requests" : 1
+         "concurrent.requests" : 1,
+        "kafka.message.json" : false,
+        "log.kafka.message" : true
       }
   }'
   ```
@@ -99,7 +103,10 @@ The detailed description of each parameter:
 * `index` (optional) - The name of elasticsearch index. Default is: `kafka-index`
 * `type` (optional) - The mapping type of elasticsearch index. Default is: `status`
 * `bulk.size` (optional) - The number of messages to be bulk indexed into elasticsearch. Default is: `100`
-* `concurrent.requests` (optional) - The number of concurrent requests of indexing that will be alowed. A value of 0 means that only a single request will be allowed to be executed. A value of 1 means 1 concurrent request is allowed to be executed while accumulating new bulk requests. Default is: `1`
+* `concurrent.requests` (optional) - The number of concurrent requests of indexing that will be alowed. A value of 0 means that only a 
+single request will be allowed to be executed. A value of 1 means 1 concurrent request is allowed to be executed while accumulating new bulk requests. Default is: `1`
+* `kafka.message.json` (optional) - The Kafka Message should be considered a JSON Object (`true`) or just a String (`false`). Default is String (set to `false`).
+* `log.kafka.message` (optional) - Emit a copy of each Kafka message to `org.elasticsearch.river.kafka.KafkaWorker` Logger. Set to `false` to not emit an entry per kafka message.  Default is `true`.
 
 Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached. 
 
