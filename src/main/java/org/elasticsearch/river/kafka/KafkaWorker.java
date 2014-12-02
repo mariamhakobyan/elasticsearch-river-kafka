@@ -63,23 +63,23 @@ public class KafkaWorker implements Runnable {
     @Override
     public void run() {
 
-        logger.info("Kafka worker started...");
+        logger.info("Index: " + riverConfig.getIndexName() + ": Kafka worker started...");
 
         if (consume) {
-            logger.info("Consumer is already running, new one will not be started...");
+            logger.info("Index: " + riverConfig.getIndexName() + ": Consumer is already running, new one will not be started...");
             return;
         }
 
         consume = true;
         try {
-            logger.info("Kafka consumer started...");
+            logger.info("Index: " + riverConfig.getIndexName() + ": Kafka consumer started...");
 
             while (consume) {
                 KafkaStream stream = chooseRandomStream(kafkaConsumer.getStreams());
                 consumeMessagesAndAddToBulkProcessor(stream);
             }
         } finally {
-            logger.info("Kafka consumer has stopped...");
+            logger.info("Index: " + riverConfig.getIndexName() + ": Kafka consumer has stopped...");
             consume = false;
         }
     }
@@ -113,7 +113,7 @@ public class KafkaWorker implements Runnable {
                 }
             }
         } catch (ConsumerTimeoutException ex) {
-            logger.info("Nothing to be consumed for now. Consume flag is: " + consume);
+            logger.info("Index: " + riverConfig.getIndexName() + ": Nothing to be consumed for now. Consume flag is: " + consume);
         } finally {
             
             if(messageSet.size() > 0) {
@@ -144,7 +144,7 @@ public class KafkaWorker implements Runnable {
         try {
             final String message = new String(messageBytes, "UTF-8");
 
-            logger.info(message);
+            logger.info("Index: " + riverConfig.getIndexName() + ": Message: " + message);
         } catch (UnsupportedEncodingException e) {
             logger.info("The UTF-8 charset is not supported for the kafka message.");
         }
