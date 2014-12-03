@@ -65,15 +65,16 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
         "type" : <mapping-type-name>,
         "bulk.size" : <bulk.size>,
         "concurrent.requests" : <concurrent.requests>,
-        "indexation.mode" : <indexation.mode>
+        "indexation.mode" : <indexation.mode>,
+        "deferred" : <deferred>
      }
  }'
- ```
+```
  * ***NOTE***: Type "kafka" is required and must not be changed. It corresponds the type, given in the source code, by which elasticsearch is able to associate created river with the installed plugin.
  
  *Example:*
 
- ```json
+```json
  curl -XPUT 'localhost:9200/_river/kafka-river/_meta' -d '
  {
       "type" : "kafka",
@@ -87,10 +88,11 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
          "type" : "status",
          "bulk.size" : 100,
          "concurrent.requests" : 1,
-         "indexation.mode" : "simple.indexation"
+         "indexation.mode" : "simple.indexation",
+         "deferred" : true
       }
   }'
-  ```
+```
  
 The detailed description of each parameter:
  
@@ -105,6 +107,7 @@ The detailed description of each parameter:
 * `indexation.mode` (optional) - The way you want to process messages you are sending via Kafka. Default is `simple.indexation` You can use the following modes :
    - `simple.indexation` : it creates an index and a type with a string field value. When reading a message via Kafka, it simple creates a document with the `value` field set to the received message.
    - `bulk.indexation` : You execute as bulk query what is sent via kafka ( like rabbitMQ river... )
+* `deferred` (optional ) - When you want to index your data : if set to true, it is indexed when you can no more read the stream, if set to false, it is done when you have enough pending bulk request. Default is : true.
 
 
 Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached. 

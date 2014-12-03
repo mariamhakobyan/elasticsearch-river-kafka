@@ -39,6 +39,7 @@ public class RiverConfig {
     private static final String BULK_SIZE = "bulk.size";
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
     private static final String INDEXATION_MODE = "indexation.mode";
+    private static final String DEFERRED = "deferred";
 
     /* Default values */
     private static final String DEFAULT_ZOOKEEPER_CONNECT = "localhost";
@@ -46,7 +47,7 @@ public class RiverConfig {
     private static final String DEFAULT_TOPIC = "elasticsearch-river-kafka";
     private static final String DEFAULT_INDEXATION_MODE = "simple.indexation";
     private static final String BULK_INDEXATION = "bulk.indexation";
-
+    private static final boolean DEFERRED_DEFAULT = true;
 
     private String zookeeperConnect;
     private int zookeeperConnectionTimeout;
@@ -56,6 +57,7 @@ public class RiverConfig {
     private IndexationMode indexationMode;
     private int bulkSize;
     private int concurrentRequests;
+    private boolean deferred;
 
     enum IndexationMode {
         Simple,
@@ -90,6 +92,7 @@ public class RiverConfig {
             } else {
                 indexationMode = IndexationMode.Simple;
             }
+            deferred = XContentMapValues.nodeBooleanValue(indexSettings.get(DEFERRED), DEFERRED_DEFAULT);
         } else {
             indexName = riverName.name();
             typeName = "status";
@@ -128,5 +131,9 @@ public class RiverConfig {
 
     IndexationMode getIndexationMode() {
         return indexationMode;
+    }
+
+    public boolean isDeferred() {
+        return deferred;
     }
 }
