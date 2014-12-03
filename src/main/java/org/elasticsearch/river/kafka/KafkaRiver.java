@@ -41,7 +41,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
         riverConfig = new RiverConfig(riverName, riverSettings);
         kafkaConsumer = new KafkaConsumer(riverConfig);
         if( riverConfig.getIndexationMode() == RiverConfig.IndexationMode.Bulk) {
-            elasticsearchProducer = new BulkProducer(client, riverConfig, kafkaConsumer);
+            elasticsearchProducer = new BulkProducer(client, kafkaConsumer);
         } else {
             elasticsearchProducer = new ElasticsearchProducer(client, riverConfig, kafkaConsumer);
         }
