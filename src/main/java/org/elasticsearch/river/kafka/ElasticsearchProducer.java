@@ -35,7 +35,7 @@ import java.util.UUID;
  *
  * @author Mariam Hakobyan
  */
-public class ElasticsearchProducer {
+public class ElasticsearchProducer implements Producer {
 
     private final ESLogger logger = ESLoggerFactory.getLogger(ElasticsearchProducer.class.getName());
 

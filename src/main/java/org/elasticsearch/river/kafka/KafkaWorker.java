@@ -39,7 +39,7 @@ import java.util.Set;
 public class KafkaWorker implements Runnable {
 
     private KafkaConsumer kafkaConsumer;
-    private ElasticsearchProducer elasticsearchProducer;
+    private Producer elasticsearchProducer;
     private RiverConfig riverConfig;
 
     private volatile boolean consume = false;
@@ -53,7 +53,7 @@ public class KafkaWorker implements Runnable {
 
 
     public KafkaWorker(final KafkaConsumer kafkaConsumer,
-                       final ElasticsearchProducer elasticsearchProducer,
+                       final Producer elasticsearchProducer,
                         final RiverConfig riverConfig) {
         this.kafkaConsumer = kafkaConsumer;
         this.elasticsearchProducer = elasticsearchProducer;

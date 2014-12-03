@@ -38,11 +38,14 @@ public class RiverConfig {
     private static final String MAPPING_TYPE = "type";
     private static final String BULK_SIZE = "bulk.size";
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
+    private static final String INDEXATION_MODE = "indexation.mode";
 
     /* Default values */
     private static final String DEFAULT_ZOOKEEPER_CONNECT = "localhost";
     private static final int DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT = 10000;
     private static final String DEFAULT_TOPIC = "elasticsearch-river-kafka";
+    private static final String DEFAULT_INDEXATION_MODE = "simple.indexation";
+    private static final String BULK_INDEXATION = "bulk.indexation";
 
 
     private String zookeeperConnect;
@@ -50,9 +53,14 @@ public class RiverConfig {
     private String topic;
     private String indexName;
     private String typeName;
+    private IndexationMode indexationMode;
     private int bulkSize;
     private int concurrentRequests;
 
+    enum IndexationMode {
+        Simple,
+        Bulk
+    }
 
     public RiverConfig(RiverName riverName, RiverSettings riverSettings) {
 
@@ -76,6 +84,12 @@ public class RiverConfig {
             typeName = XContentMapValues.nodeStringValue(indexSettings.get(MAPPING_TYPE), "status");
             bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get(BULK_SIZE), 100);
             concurrentRequests = XContentMapValues.nodeIntegerValue(indexSettings.get(CONCURRENT_REQUESTS), 1);
+            String indexationModeString = XContentMapValues.nodeStringValue(indexSettings.get(INDEXATION_MODE), DEFAULT_INDEXATION_MODE);
+            if(indexationModeString.equals(BULK_INDEXATION)) {
+                indexationMode = IndexationMode.Bulk;
+            } else {
+                indexationMode = IndexationMode.Simple;
+            }
         } else {
             indexName = riverName.name();
             typeName = "status";
@@ -110,5 +124,9 @@ public class RiverConfig {
 
     int getConcurrentRequests() {
         return concurrentRequests;
+    }
+
+    IndexationMode getIndexationMode() {
+        return indexationMode;
     }
 }
