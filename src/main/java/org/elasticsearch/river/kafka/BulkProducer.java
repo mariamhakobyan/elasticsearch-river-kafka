@@ -34,10 +34,12 @@ public class BulkProducer implements Producer {
 
     private Client client;
     private KafkaConsumer kafkaConsumer;
+    private RiverConfig riverConfig;
 
-    public BulkProducer(final Client client, final KafkaConsumer kafkaConsumer) {
+    public BulkProducer(final Client client, final RiverConfig riverConfig, final KafkaConsumer kafkaConsumer) {
         this.client = client;
         this.kafkaConsumer = kafkaConsumer;
+        this.riverConfig = riverConfig;
     }
 
     public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
@@ -46,7 +48,7 @@ public class BulkProducer implements Producer {
         for(MessageAndMetadata messageAndMetadata : messageSet) {
             final byte[] messageBytes = (byte[])  messageAndMetadata.message();
             try {
-                bulkRequestBuilder.add(messageBytes, 0, messageBytes.length, false);
+                bulkRequestBuilder.add(messageBytes, 0, messageBytes.length, false, riverConfig.getIndexName(), riverConfig.getTypeName());
                 BulkResponse response = bulkRequestBuilder.execute().actionGet();
                 if (response.hasFailures()) {
                     logger.warn("failed to execute" + response.buildFailureMessage());
