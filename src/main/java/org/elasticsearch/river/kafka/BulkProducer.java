@@ -47,16 +47,17 @@ public class BulkProducer implements Producer {
             final byte[] messageBytes = (byte[])  messageAndMetadata.message();
             try {
                 bulkRequestBuilder.add(messageBytes, 0, messageBytes.length, false);
+                BulkResponse response = bulkRequestBuilder.execute().actionGet();
+                if (response.hasFailures()) {
+                    logger.warn("failed to execute" + response.buildFailureMessage());
+                }
             } catch (Exception e) {
-                kafkaConsumer.getConsumerConnector().commitOffsets();
                 e.printStackTrace();
                 logger.error("Could not index that");
-                continue;
+            } finally {
+                kafkaConsumer.getConsumerConnector().commitOffsets();
             }
-            BulkResponse response = bulkRequestBuilder.execute().actionGet();
-            if (response.hasFailures()) {
-                logger.warn("failed to execute" + response.buildFailureMessage());
-            }
+
         }
     }
 
