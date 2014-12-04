@@ -17,42 +17,38 @@
 package org.elasticsearch.river.kafka;
 
 import kafka.message.MessageAndMetadata;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.support.replication.ReplicationType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.bytes.ChannelBufferBytesReference;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.netty.buffer.ByteBufferBackedChannelBuffer;
 
+import java.nio.ByteBuffer;
 import java.util.Set;
 
 /**
  * This producer execute bulk requests.
  */
-public class BulkProducer implements Producer {
+public class BulkProducer extends Producer {
+
     private final ESLogger logger = ESLoggerFactory.getLogger(BulkProducer.class.getName());
 
-    private Client client;
-    private KafkaConsumer kafkaConsumer;
-    private RiverConfig riverConfig;
-
     public BulkProducer(final Client client, final RiverConfig riverConfig, final KafkaConsumer kafkaConsumer) {
-        this.client = client;
-        this.kafkaConsumer = kafkaConsumer;
-        this.riverConfig = riverConfig;
+        super(client, kafkaConsumer, riverConfig);
     }
 
     public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
         logger.info("In bulk processor");
-        BulkRequestBuilder bulkRequestBuilder = client.prepareBulk().setReplicationType(ReplicationType.DEFAULT);
         for(MessageAndMetadata messageAndMetadata : messageSet) {
             final byte[] messageBytes = (byte[])  messageAndMetadata.message();
             try {
-                bulkRequestBuilder.add(messageBytes, 0, messageBytes.length, false, riverConfig.getIndexName(), riverConfig.getTypeName());
-                BulkResponse response = bulkRequestBuilder.execute().actionGet();
-                if (response.hasFailures()) {
-                    logger.warn("failed to execute" + response.buildFailureMessage());
-                }
+                ByteBuffer byteBuffer = ByteBuffer.wrap(messageBytes);
+                bulkProcessor.add(
+                        new ChannelBufferBytesReference(new ByteBufferBackedChannelBuffer(byteBuffer)),
+                        false,
+                        riverConfig.getIndexName(),
+                        riverConfig.getTypeName()
+                );
             } catch (Exception e) {
                 e.printStackTrace();
                 logger.error("Could not index that");
@@ -61,10 +57,6 @@ public class BulkProducer implements Producer {
             }
 
         }
-    }
-
-    public void closeBulkProcessor() {
-
     }
 
 
