@@ -38,6 +38,7 @@ public class RiverConfig {
     private static final String MAPPING_TYPE = "type";
     private static final String BULK_SIZE = "bulk.size";
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
+    private static final String ACTION_TYPE = "action.type";
 
     /* Default values */
     private static final String DEFAULT_ZOOKEEPER_CONNECT = "localhost";
@@ -52,6 +53,7 @@ public class RiverConfig {
     private String typeName;
     private int bulkSize;
     private int concurrentRequests;
+    private ActionType actionType;
 
 
     public RiverConfig(RiverName riverName, RiverSettings riverSettings) {
@@ -69,18 +71,48 @@ public class RiverConfig {
             topic = DEFAULT_TOPIC;
         }
 
-        // Extract elasticsearch related configuration
+        // Extract ElasticSearch related configuration
         if (riverSettings.settings().containsKey("index")) {
             Map<String, Object> indexSettings = (Map<String, Object>) riverSettings.settings().get("index");
             indexName = XContentMapValues.nodeStringValue(indexSettings.get(INDEX_NAME), riverName.name());
             typeName = XContentMapValues.nodeStringValue(indexSettings.get(MAPPING_TYPE), "status");
             bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get(BULK_SIZE), 100);
             concurrentRequests = XContentMapValues.nodeIntegerValue(indexSettings.get(CONCURRENT_REQUESTS), 1);
+            actionType = ActionType.fromValue(XContentMapValues.nodeStringValue(indexSettings.get(ACTION_TYPE), "index"));
         } else {
             indexName = riverName.name();
             typeName = "status";
             bulkSize = 100;
             concurrentRequests = 1;
+            actionType = ActionType.INDEX;
+        }
+    }
+
+    public enum ActionType {
+
+        INDEX("index"),
+        DELETE("delete"),
+        RAW_EXECUTE("raw.execute");
+
+        private String actionType;
+
+        private ActionType(String actionType) {
+            this.actionType = actionType;
+        }
+
+        public String toValue() {
+            return actionType;
+        }
+
+        public static ActionType fromValue(String value) {
+            if(value == null) throw new IllegalArgumentException();
+
+            for(ActionType values : values()) {
+                if(value.equalsIgnoreCase(values.toValue()))
+                    return values;
+            }
+
+            throw new IllegalArgumentException("ActionType with value " + value + " does not exist.");
         }
     }
 
@@ -110,5 +142,9 @@ public class RiverConfig {
 
     int getConcurrentRequests() {
         return concurrentRequests;
+    }
+
+    ActionType getActionType() {
+        return actionType;
     }
 }
