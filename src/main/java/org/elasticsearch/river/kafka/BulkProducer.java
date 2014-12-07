@@ -38,7 +38,6 @@ public class BulkProducer extends Producer {
     }
 
     public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
-        logger.info("In bulk processor");
         for(MessageAndMetadata messageAndMetadata : messageSet) {
             final byte[] messageBytes = (byte[])  messageAndMetadata.message();
             try {

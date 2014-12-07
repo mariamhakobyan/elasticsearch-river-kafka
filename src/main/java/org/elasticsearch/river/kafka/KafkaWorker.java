@@ -109,19 +109,12 @@ public class KafkaWorker implements Runnable {
                     messageSet = Sets.newHashSet();
                     counter = 0;
                 }
-                if(!riverConfig.isDeferred()) {
-                    if (messageSet.size() > 0) {
-                        elasticsearchProducer.addMessagesToBulkProcessor(messageSet);
-                    }
-                }
             }
         } catch (ConsumerTimeoutException ex) {
             logger.info("Nothing to be consumed for now. Consume flag is: " + consume);
         } finally {
-            if(riverConfig.isDeferred()) {
-                if (messageSet.size() > 0) {
-                    elasticsearchProducer.addMessagesToBulkProcessor(messageSet);
-                }
+            if (messageSet.size() > 0) {
+                elasticsearchProducer.addMessagesToBulkProcessor(messageSet);
             }
         }
     }
