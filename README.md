@@ -104,7 +104,7 @@ The detailed description of each parameter:
 * `concurrent.requests` (optional) - The number of concurrent requests of indexing that will be allowed. A value of 0 means that only a single request will be allowed to be executed. A value of 1 means 1 concurrent request is allowed to be executed while accumulating new bulk requests. Default is: `1`
 * `action.type` (optional) - The action type against how the messages should be processed. Default is: `index`. The following options are available:
    - `index` : Creates documents in ES with the `value` field set to the received message.
-   - `delete` : Deletes documents from ES with the `id` field set in the received message.
+   - `delete` : Deletes documents from ES based on `id` field set in the received message.
    - `raw.execute` : Execute incoming messages as a raw query.
 
 Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached. 
