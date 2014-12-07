@@ -29,7 +29,7 @@ import org.elasticsearch.river.RiverSettings;
 public class KafkaRiver extends AbstractRiverComponent implements River {
 
     private KafkaConsumer kafkaConsumer;
-    private ElasticsearchProducer elasticsearchProducer;
+    private Producer elasticsearchProducer;
     private RiverConfig riverConfig;
 
     private Thread thread;
@@ -40,7 +40,11 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
         riverConfig = new RiverConfig(riverName, riverSettings);
         kafkaConsumer = new KafkaConsumer(riverConfig);
-        elasticsearchProducer = new ElasticsearchProducer(client, riverConfig, kafkaConsumer);
+        if( riverConfig.getIndexationMode() == RiverConfig.IndexationMode.Bulk) {
+            elasticsearchProducer = new BulkProducer(client, riverConfig, kafkaConsumer);
+        } else {
+            elasticsearchProducer = new ElasticsearchProducer(client, riverConfig, kafkaConsumer);
+        }
     }
 
     @Override
