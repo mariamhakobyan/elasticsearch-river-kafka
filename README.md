@@ -21,21 +21,21 @@ Setup
 
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin -install <plugin-name> -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.1.1/elasticsearch-river-kafka-1.1.1-plugin.zip
+.bin/plugin -install <plugin-name> -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.2.0/elasticsearch-river-kafka-1.2.0-plugin.zip
 ```
 *Example:*
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.1.1/elasticsearch-river-kafka-1.1.1-plugin.zip
+.bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.2.0/elasticsearch-river-kafka-1.2.0-plugin.zip
 ```
 
 If it doesn't work, clone git repository and build plugin manually.
-* Build the plugin - it will create a zip file here: $PROJECT-PATH/target/elasticsearch-river-kafka-1.1.1-SNAPSHOT-plugin.zip
+* Build the plugin - it will create a zip file here: $PROJECT-PATH/target/elasticsearch-river-kafka-1.2.0-SNAPSHOT-plugin.zip
 * Install the plugin from target into elasticsearch
  
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin --install <plugin-name> --url file:////$PLUGIN-PATH/elasticsearch-river-kafka-1.1.1-SNAPSHOT-plugin.zip
+.bin/plugin --install <plugin-name> --url file:////$PLUGIN-PATH/elasticsearch-river-kafka-1.2.0-SNAPSHOT-plugin.zip
 ```
 
 Update installed plugin
