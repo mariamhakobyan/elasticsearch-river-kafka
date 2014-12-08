@@ -48,11 +48,19 @@ public class DeleteDocumentProducer extends ElasticSearchProducer {
             if (messageBytes == null || messageBytes.length == 0) return;
 
             try {
-                final DeleteRequest request = Requests.deleteRequest(riverConfig.getIndexName()).
-                        type(riverConfig.getTypeName()).
-                        id(UUID.randomUUID().toString());  // TODO add id retrieval from json
+                final Map<String, Object> messageMap = reader.readValue(messageBytes);
 
-                bulkProcessor.add(request);
+                if(messageMap.containsKey("id")) {
+                    String id = (String)messageMap.get("id");
+
+                    final DeleteRequest request = Requests.deleteRequest(riverConfig.getIndexName()).
+                            type(riverConfig.getTypeName()).
+                            id(id);
+
+                    bulkProcessor.add(request);
+                } else {
+                    throw new IllegalArgumentException("No id provided in a message to delete a document from EL.");
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
