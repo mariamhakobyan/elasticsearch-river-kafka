@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Mariam Hakobyan
+ * Copyright 2014 Mariam Hakobyan
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,32 +19,29 @@ import kafka.message.MessageAndMetadata;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentFactory;
 
 import java.util.Set;
-import java.util.UUID;
 
 /**
- * An Elasticsearch producer, which creates an index, mapping in the EL, and puts messages in EL.
+ * An ElasticSearch base producer, which creates an index, mapping in the EL.
+ * Also, creates index/delete document requests against ElasticSearch, and executes them with Bulk API.
  *
  * @author Mariam Hakobyan
  */
-public class ElasticsearchProducer {
+public abstract class ElasticSearchProducer {
 
-    private final ESLogger logger = ESLoggerFactory.getLogger(ElasticsearchProducer.class.getName());
+    private final ESLogger logger = ESLoggerFactory.getLogger(ElasticSearchProducer.class.getName());
 
     private Client client;
-    private BulkProcessor bulkProcessor;
+    protected BulkProcessor bulkProcessor;
 
-    private RiverConfig riverConfig;
+    protected RiverConfig riverConfig;
 
-    public ElasticsearchProducer(final Client client, final RiverConfig riverConfig, final KafkaConsumer kafkaConsumer) {
+    public ElasticSearchProducer(final Client client, final RiverConfig riverConfig, final KafkaConsumer kafkaConsumer) {
         this.client = client;
         this.riverConfig = riverConfig;
 
@@ -64,7 +61,7 @@ public class ElasticsearchProducer {
                         logger.info("Executed bulk composed of {} actions.", request.numberOfActions());
 
                         // Commit the kafka messages offset, only when messages have been successfully
-                        // inserted into elasticsearch
+                        // inserted into ElasticSearch
                         kafkaConsumer.getConsumerConnector().commitOffsets();
                     }
 
@@ -80,34 +77,12 @@ public class ElasticsearchProducer {
     }
 
     /**
-     * For the given messages creates index requests and adds them to the bulk processor queue, for
+     * For the given messages executes the specified operation type and adds the results bulk processor queue, for
      * processing later when the size of bulk actions is reached.
      *
      * @param messageSet given set of messages
      */
-    public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
-
-        for (MessageAndMetadata messageAndMetadata : messageSet) {
-            final byte[] messageBytes = (byte[]) messageAndMetadata.message();
-
-            if (messageBytes == null || messageBytes.length == 0) return;
-
-            try {
-                // TODO - future improvement - support for protobuf messages
-                final IndexRequest request = Requests.indexRequest(riverConfig.getIndexName()).
-                        type(riverConfig.getTypeName()).
-                        id(UUID.randomUUID().toString()).
-                        source(XContentFactory.jsonBuilder()
-                                .startObject()
-                                .field("value", new String(messageBytes, "UTF-8"))
-                                .endObject());
-
-                bulkProcessor.add(request);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
+    public abstract void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet);
 
     public void closeBulkProcessor() {
         bulkProcessor.close();

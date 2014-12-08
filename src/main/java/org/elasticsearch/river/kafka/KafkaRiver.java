@@ -23,13 +23,16 @@ import org.elasticsearch.river.River;
 import org.elasticsearch.river.RiverName;
 import org.elasticsearch.river.RiverSettings;
 
+import static org.elasticsearch.river.kafka.RiverConfig.*;
+import static org.elasticsearch.river.kafka.RiverConfig.ActionType.*;
+
 /**
  * This is the actual river implementation, which starts a thread to read messages from kafka and put them into elasticsearch.
  */
 public class KafkaRiver extends AbstractRiverComponent implements River {
 
     private KafkaConsumer kafkaConsumer;
-    private ElasticsearchProducer elasticsearchProducer;
+    private ElasticSearchProducer elasticsearchProducer;
     private RiverConfig riverConfig;
 
     private Thread thread;
@@ -40,7 +43,18 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
         riverConfig = new RiverConfig(riverName, riverSettings);
         kafkaConsumer = new KafkaConsumer(riverConfig);
-        elasticsearchProducer = new ElasticsearchProducer(client, riverConfig, kafkaConsumer);
+
+        switch (riverConfig.getActionType()) {
+            case INDEX:
+                elasticsearchProducer = new IndexDocumentProducer(client, riverConfig, kafkaConsumer);
+                break;
+            case DELETE:
+                elasticsearchProducer = new DeleteDocumentProducer(client, riverConfig, kafkaConsumer);
+                break;
+            case RAW_EXECUTE:
+                elasticsearchProducer = new RawMessageProducer(client, riverConfig, kafkaConsumer);
+                break;
+        }
     }
 
     @Override

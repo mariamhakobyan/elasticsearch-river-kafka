@@ -24,7 +24,6 @@ import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -32,14 +31,14 @@ import java.util.Set;
 
 /**
  * The worker thread, which does the actual job of consuming messages from kafka and passing those to
- * Elastic Search producer - {@link org.elasticsearch.river.kafka.ElasticsearchProducer} to index.
+ * Elastic Search producer - {@link ElasticSearchProducer} to index.
  * Behind the scenes of kafka high level API, the worker will read the messages from different kafka brokers and
  * partitions.
  */
 public class KafkaWorker implements Runnable {
 
     private KafkaConsumer kafkaConsumer;
-    private ElasticsearchProducer elasticsearchProducer;
+    private ElasticSearchProducer elasticsearchProducer;
     private RiverConfig riverConfig;
 
     private volatile boolean consume = false;
@@ -53,8 +52,8 @@ public class KafkaWorker implements Runnable {
 
 
     public KafkaWorker(final KafkaConsumer kafkaConsumer,
-                       final ElasticsearchProducer elasticsearchProducer,
-                        final RiverConfig riverConfig) {
+                       final ElasticSearchProducer elasticsearchProducer,
+                       final RiverConfig riverConfig) {
         this.kafkaConsumer = kafkaConsumer;
         this.elasticsearchProducer = elasticsearchProducer;
         this.riverConfig = riverConfig;
