@@ -61,20 +61,20 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
     public void start() {
 
         try {
-            logger.debug("Index: {}: Starting Kafka River...", riverConfig.getIndexName());
+            logger.info("Starting Kafka River...");
             final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer, riverConfig);
 
             thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "Kafka River Worker").newThread(kafkaWorker);
             thread.start();
         } catch (Exception ex) {
-            logger.error("Index: {}: Unexpected Error occurred", ex, riverConfig.getIndexName());
+            logger.error("Unexpected Error occurred", ex);
             throw new RuntimeException(ex);
         }
     }
 
     @Override
     public void close() {
-        logger.debug("Index: {}: Closing kafka river...", riverConfig.getIndexName());
+        logger.info("Closing kafka river...");
 
         elasticsearchProducer.closeBulkProcessor();
         kafkaConsumer.shutdown();

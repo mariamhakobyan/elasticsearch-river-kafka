@@ -40,7 +40,7 @@ public class KafkaConsumer {
     private List<KafkaStream<byte[], byte[]>> streams;
     private ConsumerConnector consumerConnector;
 
-    private static final ESLogger logger = ESLoggerFactory.getLogger(KafkaConsumer.class.getName());
+    private final ESLogger logger = ESLoggerFactory.getLogger(KafkaConsumer.class.getName());
 
 
     public KafkaConsumer(final RiverConfig riverConfig) {
@@ -54,8 +54,7 @@ public class KafkaConsumer {
 
         streams = consumerStreams.get(riverConfig.getTopic());
 
-        logger.debug("Index: {}: Started kafka consumer for topic: {} with {} partitions in it.",
-                riverConfig.getIndexName(), riverConfig.getTopic(), streams.size());
+        logger.info("Started kafka consumer for topic: " + riverConfig.getTopic() + " with " + streams.size() + " partitions in it.");
     }
 
     private ConsumerConfig createConsumerConfig(final RiverConfig riverConfig) {

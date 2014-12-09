@@ -43,7 +43,7 @@ public class KafkaWorker implements Runnable {
 
     private volatile boolean consume = false;
 
-    private static final ESLogger logger = ESLoggerFactory.getLogger(KafkaWorker.class.getName());
+    private final ESLogger logger = ESLoggerFactory.getLogger(KafkaWorker.class.getName());
 
     /**
      * For randomly selecting the partition of a kafka partition.
@@ -62,23 +62,23 @@ public class KafkaWorker implements Runnable {
     @Override
     public void run() {
 
-        logger.debug("Index: {}: Kafka worker started...", riverConfig.getIndexName());
+        logger.info("Kafka worker started...");
 
         if (consume) {
-            logger.debug("Index: {}: Consumer is already running, new one will not be started...", riverConfig.getIndexName());
+            logger.info("Consumer is already running, new one will not be started...");
             return;
         }
 
         consume = true;
         try {
-            logger.debug("Index: {}: Kafka consumer started...", riverConfig.getIndexName());
+            logger.info("Kafka consumer started...");
 
             while (consume) {
                 KafkaStream stream = chooseRandomStream(kafkaConsumer.getStreams());
                 consumeMessagesAndAddToBulkProcessor(stream);
             }
         } finally {
-            logger.debug("Index: {}: Kafka consumer has stopped...", riverConfig.getIndexName());
+            logger.info("Kafka consumer has stopped...");
             consume = false;
         }
     }
@@ -110,7 +110,7 @@ public class KafkaWorker implements Runnable {
                 }
             }
         } catch (ConsumerTimeoutException ex) {
-            logger.debug("Nothing to be consumed for now. Consume flag is: {}", consume);
+            logger.info("Nothing to be consumed for now. Consume flag is: " + consume);
         } finally {
             
             if(messageSet.size() > 0) {
@@ -122,10 +122,13 @@ public class KafkaWorker implements Runnable {
     /**
      * Chooses a random stream to consume messages from, from the given list of all streams.
      *
-     * @return randomly chosen stream
+     * @return randomly choosen stream
      */
     private KafkaStream chooseRandomStream(final List<KafkaStream<byte[], byte[]>> streams) {
         final int streamNumber = random.nextInt(streams.size());
+
+//        logger.info("Selected stream " + streamNumber + " out of  " + streams.size() + " from TOPIC: " + kafkaConsumer.getRiverConfig().getTopic());
+
         return streams.get(streamNumber);
     }
 
@@ -138,9 +141,9 @@ public class KafkaWorker implements Runnable {
         try {
             final String message = new String(messageBytes, "UTF-8");
 
-            logger.debug("Index: {}: Message received: {}", riverConfig.getIndexName(), message);
+            logger.info(message);
         } catch (UnsupportedEncodingException e) {
-            logger.debug("The UTF-8 charset is not supported for the kafka message.");
+            logger.info("The UTF-8 charset is not supported for the kafka message.");
         }
     }
 }

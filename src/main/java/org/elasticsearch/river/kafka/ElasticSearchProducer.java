@@ -34,7 +34,7 @@ import java.util.Set;
  */
 public abstract class ElasticSearchProducer {
 
-    private static final ESLogger logger = ESLoggerFactory.getLogger(ElasticSearchProducer.class.getName());
+    private final ESLogger logger = ESLoggerFactory.getLogger(ElasticSearchProducer.class.getName());
 
     private Client client;
     protected BulkProcessor bulkProcessor;
@@ -53,12 +53,12 @@ public abstract class ElasticSearchProducer {
                 new BulkProcessor.Listener() {
                     @Override
                     public void beforeBulk(long executionId, BulkRequest request) {
-                        logger.info("Index: {}: Going to execute bulk request composed of {} actions.", riverConfig.getIndexName(), request.numberOfActions());
+                        logger.info("Going to execute bulk request composed of {} actions.", request.numberOfActions());
                     }
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-                        logger.info("Index: {}: Executed bulk composed of {} actions.", riverConfig.getIndexName(), request.numberOfActions());
+                        logger.info("Executed bulk composed of {} actions.", request.numberOfActions());
 
                         // Commit the kafka messages offset, only when messages have been successfully
                         // inserted into ElasticSearch
@@ -67,7 +67,7 @@ public abstract class ElasticSearchProducer {
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-                        logger.warn("Index: {}: Error executing bulk.", failure, riverConfig.getIndexName());
+                        logger.warn("Error executing bulk.", failure);
                     }
                 })
                 .setBulkActions(riverConfig.getBulkSize())
