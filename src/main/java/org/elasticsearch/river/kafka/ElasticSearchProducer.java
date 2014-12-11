@@ -16,6 +16,9 @@
 package org.elasticsearch.river.kafka;
 
 import kafka.message.MessageAndMetadata;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectReader;
+import org.codehaus.jackson.type.TypeReference;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -24,6 +27,7 @@ import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.unit.TimeValue;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -35,6 +39,8 @@ import java.util.Set;
 public abstract class ElasticSearchProducer {
 
     private static final ESLogger logger = ESLoggerFactory.getLogger(ElasticSearchProducer.class.getName());
+
+    protected final ObjectReader reader = new ObjectMapper().reader(new TypeReference<Map<String, Object>>() {});
 
     private Client client;
     protected BulkProcessor bulkProcessor;

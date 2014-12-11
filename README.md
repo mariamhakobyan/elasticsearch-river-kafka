@@ -100,7 +100,24 @@ The detailed description of each parameter:
 * `zookeeper.connect` (optional) - Zookeeper server host. Default is: `localhost`
 * `zookeeper.connection.timeout.ms` (optional) - Zookeeper server connection timeout in milliseconds. Default is: `10000`
 * `topic` (optional) - The name of the topic where you want to send Kafka message. Default is: `elasticsearch-river-kafka`
-* `message.type` (optional) - The kafka message type, which then will be inserted into ES keeping the type. Default is: `json`. The following options are available: `json` and `string`.
+* `message.type` (optional) - The kafka message type, which then will be inserted into ES keeping the same type. Default is: `json`. The following options are available: 
+   - `json` : Inserts json message into ES separating each json property into ES document property.
+   *example:*
+      ```json
+       "_source": {
+                      "name": "John",
+                      "age": 28
+                   }
+      ```
+   
+   - `string` : Inserts string message into ES as a documet, where the key name is `value`, and the value is the received message.
+   *example:*
+   ```json
+    "_source": {
+                   "value": "received text message"
+                }
+   ```
+   
 * `index` (optional) - The name of elasticsearch index. Default is: `kafka-index`
 * `type` (optional) - The mapping type of elasticsearch index. Default is: `status`
 * `bulk.size` (optional) - The number of messages to be bulk indexed into elasticsearch. Default is: `100`

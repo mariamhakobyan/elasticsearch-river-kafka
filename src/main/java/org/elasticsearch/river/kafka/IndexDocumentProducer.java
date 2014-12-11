@@ -21,6 +21,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -52,22 +53,27 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
                 // TODO - future improvement - support for protobuf messages
 
                 String message = null;
+                IndexRequest request = null;
+
                 switch (riverConfig.getMessageType()) {
                     case STRING:
-                        message = new String(messageBytes, "UTF-8");
-                        break;
-                    case JSON:
                         message = XContentFactory.jsonBuilder()
                                 .startObject()
                                 .field("value", new String(messageBytes, "UTF-8"))
                                 .endObject()
                                 .string();
+                        request = Requests.indexRequest(riverConfig.getIndexName()).
+                                type(riverConfig.getTypeName()).
+                                id(UUID.randomUUID().toString()).
+                                source(message);
+                        break;
+                    case JSON:
+                        final Map<String, Object> messageMap = reader.readValue(messageBytes);
+                        request = Requests.indexRequest(riverConfig.getIndexName()).
+                                type(riverConfig.getTypeName()).
+                                id(UUID.randomUUID().toString()).
+                                source(messageMap);
                 }
-
-                final IndexRequest request = Requests.indexRequest(riverConfig.getIndexName()).
-                        type(riverConfig.getTypeName()).
-                        id(UUID.randomUUID().toString()).
-                        source(message);
 
                 bulkProcessor.add(request);
             } catch (Exception ex) {

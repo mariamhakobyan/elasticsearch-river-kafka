@@ -16,16 +16,12 @@
 package org.elasticsearch.river.kafka;
 
 import kafka.message.MessageAndMetadata;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectReader;
-import org.codehaus.jackson.type.TypeReference;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Producer to delete documents. Creates delete document requests, which are executed with Bulk API.
@@ -33,8 +29,6 @@ import java.util.UUID;
  * @author Mariam Hakobyan
  */
 public class DeleteDocumentProducer extends ElasticSearchProducer {
-
-    private final ObjectReader reader = new ObjectMapper().reader(new TypeReference<Map<String, Object>>() {});
 
     public DeleteDocumentProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer) {
         super(client, riverConfig, kafkaConsumer);
