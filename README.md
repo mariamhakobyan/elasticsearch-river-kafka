@@ -21,21 +21,21 @@ Setup
 
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin -install <plugin-name> -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.2.0/elasticsearch-river-kafka-1.2.0-plugin.zip
+.bin/plugin -install <plugin-name> -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.2.1/elasticsearch-river-kafka-1.2.1-plugin.zip
 ```
 *Example:*
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.2.0/elasticsearch-river-kafka-1.2.0-plugin.zip
+.bin/plugin -install kafka-river -url https://github.com/mariamhakobyan/elasticsearch-river-kafka/releases/download/v1.2.1/elasticsearch-river-kafka-1.2.1-plugin.zip
 ```
 
 If it doesn't work, clone git repository and build plugin manually.
-* Build the plugin - it will create a zip file here: $PROJECT-PATH/target/elasticsearch-river-kafka-1.2.0-SNAPSHOT-plugin.zip
+* Build the plugin - it will create a zip file here: $PROJECT-PATH/target/elasticsearch-river-kafka-1.2.1-SNAPSHOT-plugin.zip
 * Install the plugin from target into elasticsearch
  
 ```sh
 cd $ELASTICSEARCH_HOME
-.bin/plugin --install <plugin-name> --url file:////$PLUGIN-PATH/elasticsearch-river-kafka-1.2.0-SNAPSHOT-plugin.zip
+.bin/plugin --install <plugin-name> --url file:////$PLUGIN-PATH/elasticsearch-river-kafka-1.2.1-SNAPSHOT-plugin.zip
 ```
 
 Update installed plugin
@@ -58,11 +58,12 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
      "kafka" : {
         "zookeeper.connect" : <zookeeper.connect>, 
         "zookeeper.connection.timeout.ms" : <zookeeper.connection.timeout.ms>,
-        "topic" : <topic-name>
+        "topic" : <topic.name>,
+        "message.type" : <message.type>
     },
     "index" : {
-        "index" : <index-name>,
-        "type" : <mapping-type-name>,
+        "index" : <index.name>,
+        "type" : <mapping.type.name>,
         "bulk.size" : <bulk.size>,
         "concurrent.requests" : <concurrent.requests>,
         "action.type" : <action.type>
@@ -80,7 +81,8 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
       "kafka" : {
          "zookeeper.connect" : "localhost", 
          "zookeeper.connection.timeout.ms" : 10000,
-         "topic" : "river"         
+         "topic" : "river",
+         "message.type" : "json"
      },
      "index" : {
          "index" : "kafka-index",
@@ -98,6 +100,7 @@ The detailed description of each parameter:
 * `zookeeper.connect` (optional) - Zookeeper server host. Default is: `localhost`
 * `zookeeper.connection.timeout.ms` (optional) - Zookeeper server connection timeout in milliseconds. Default is: `10000`
 * `topic` (optional) - The name of the topic where you want to send Kafka message. Default is: `elasticsearch-river-kafka`
+* `message.type` (optional) - The kafka message type, which then will be inserted into ES keeping the type. Default is: `json`. The following options are available: `json` and `string`.
 * `index` (optional) - The name of elasticsearch index. Default is: `kafka-index`
 * `type` (optional) - The mapping type of elasticsearch index. Default is: `status`
 * `bulk.size` (optional) - The number of messages to be bulk indexed into elasticsearch. Default is: `100`

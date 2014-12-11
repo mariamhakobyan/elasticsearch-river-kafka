@@ -29,9 +29,10 @@ import java.util.Map;
 public class RiverConfig {
 
     /* Kakfa config */
-    static final String ZOOKEEPER_CONNECT = "zookeeper.connect";
+    private static final String ZOOKEEPER_CONNECT = "zookeeper.connect";
     private static final String ZOOKEEPER_CONNECTION_TIMEOUT = "zookeeper.connection.timeout.ms";
     private static final String TOPIC = "topic";
+    private static final String MESSAGE_TYPE = "message.type";
 
     /* Elasticsearch config */
     private static final String INDEX_NAME = "index";
@@ -40,15 +41,11 @@ public class RiverConfig {
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
     private static final String ACTION_TYPE = "action.type";
 
-    /* Default values */
-    private static final String DEFAULT_ZOOKEEPER_CONNECT = "localhost";
-    private static final int DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT = 10000;
-    private static final String DEFAULT_TOPIC = "elasticsearch-river-kafka";
-
 
     private String zookeeperConnect;
     private int zookeeperConnectionTimeout;
     private String topic;
+    private MessageType messageType;
     private String indexName;
     private String typeName;
     private int bulkSize;
@@ -63,12 +60,15 @@ public class RiverConfig {
             Map<String, Object> kafkaSettings = (Map<String, Object>) riverSettings.settings().get("kafka");
 
             topic = (String) kafkaSettings.get(TOPIC);
-            zookeeperConnect = XContentMapValues.nodeStringValue(kafkaSettings.get(ZOOKEEPER_CONNECT), DEFAULT_ZOOKEEPER_CONNECT);
-            zookeeperConnectionTimeout = XContentMapValues.nodeIntegerValue(kafkaSettings.get(ZOOKEEPER_CONNECTION_TIMEOUT), DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT);
+            zookeeperConnect = XContentMapValues.nodeStringValue(kafkaSettings.get(ZOOKEEPER_CONNECT), "localhost");
+            zookeeperConnectionTimeout = XContentMapValues.nodeIntegerValue(kafkaSettings.get(ZOOKEEPER_CONNECTION_TIMEOUT), 10000);
+            messageType = MessageType.fromValue(XContentMapValues.nodeStringValue(kafkaSettings.get(MESSAGE_TYPE),
+                    MessageType.JSON.toValue()));
         } else {
-            zookeeperConnect = DEFAULT_ZOOKEEPER_CONNECT;
-            zookeeperConnectionTimeout = DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT;
-            topic = DEFAULT_TOPIC;
+            zookeeperConnect = "localhost";
+            zookeeperConnectionTimeout = 10000;
+            topic = "elasticsearch-river-kafka";
+            messageType = MessageType.JSON;
         }
 
         // Extract ElasticSearch related configuration
@@ -78,7 +78,8 @@ public class RiverConfig {
             typeName = XContentMapValues.nodeStringValue(indexSettings.get(MAPPING_TYPE), "status");
             bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get(BULK_SIZE), 100);
             concurrentRequests = XContentMapValues.nodeIntegerValue(indexSettings.get(CONCURRENT_REQUESTS), 1);
-            actionType = ActionType.fromValue(XContentMapValues.nodeStringValue(indexSettings.get(ACTION_TYPE), "index"));
+            actionType = ActionType.fromValue(XContentMapValues.nodeStringValue(indexSettings.get(ACTION_TYPE),
+                    ActionType.INDEX.toValue()));
         } else {
             indexName = riverName.name();
             typeName = "status";
@@ -116,6 +117,32 @@ public class RiverConfig {
         }
     }
 
+    public enum MessageType {
+        STRING("string"),
+        JSON("json");
+
+        private String messageType;
+
+        private MessageType(String messageType) {
+            this.messageType = messageType;
+        }
+
+        public String toValue() {
+            return messageType;
+        }
+
+        public static MessageType fromValue(String value) {
+            if(value == null) throw new IllegalArgumentException();
+
+            for(MessageType values : values()) {
+                if(value.equalsIgnoreCase(values.toValue()))
+                    return values;
+            }
+
+            throw new IllegalArgumentException("MessageType with value " + value + " does not exist.");
+        }
+    }
+
     String getTopic() {
         return topic;
     }
@@ -126,6 +153,10 @@ public class RiverConfig {
 
     int getZookeeperConnectionTimeout() {
         return zookeeperConnectionTimeout;
+    }
+
+    MessageType getMessageType() {
+        return messageType;
     }
 
     String getIndexName() {

@@ -50,13 +50,24 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
 
             try {
                 // TODO - future improvement - support for protobuf messages
+
+                String message = null;
+                switch (riverConfig.getMessageType()) {
+                    case STRING:
+                        message = new String(messageBytes, "UTF-8");
+                        break;
+                    case JSON:
+                        message = XContentFactory.jsonBuilder()
+                                .startObject()
+                                .field("value", new String(messageBytes, "UTF-8"))
+                                .endObject()
+                                .string();
+                }
+
                 final IndexRequest request = Requests.indexRequest(riverConfig.getIndexName()).
                         type(riverConfig.getTypeName()).
                         id(UUID.randomUUID().toString()).
-                        source(XContentFactory.jsonBuilder()
-                                .startObject()
-                                .field("value", new String(messageBytes, "UTF-8"))
-                                .endObject());
+                        source(message);
 
                 bulkProcessor.add(request);
             } catch (Exception ex) {

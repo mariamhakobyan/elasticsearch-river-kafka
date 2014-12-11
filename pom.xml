@@ -6,7 +6,7 @@
 
     <groupId>elasticsearch-river-kafka</groupId>
     <artifactId>elasticsearch-river-kafka</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Kafka River Plugin for ElasticSearch</name>

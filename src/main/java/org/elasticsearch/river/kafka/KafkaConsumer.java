@@ -60,7 +60,7 @@ public class KafkaConsumer {
 
     private ConsumerConfig createConsumerConfig(final RiverConfig riverConfig) {
         final Properties props = new Properties();
-        props.put(RiverConfig.ZOOKEEPER_CONNECT, riverConfig.getZookeeperConnect());
+        props.put("zookeeper.connect", riverConfig.getZookeeperConnect());
         props.put("zookeeper.connection.timeout.ms", String.valueOf(riverConfig.getZookeeperConnectionTimeout()));
         props.put("group.id", GROUP_ID);
         props.put("auto.commit.enable", String.valueOf(false));
