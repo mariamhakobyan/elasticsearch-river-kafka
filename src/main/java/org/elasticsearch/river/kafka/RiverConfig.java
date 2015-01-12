@@ -93,7 +93,8 @@ public class RiverConfig {
 
         INDEX("index"),
         DELETE("delete"),
-        RAW_EXECUTE("raw.execute");
+        RAW_EXECUTE("raw.execute"),
+        GENERIC_REQUEST("generic.request");
 
         private String actionType;
 

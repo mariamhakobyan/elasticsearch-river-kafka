@@ -42,7 +42,7 @@ public abstract class ElasticSearchProducer {
 
     protected final ObjectReader reader = new ObjectMapper().reader(new TypeReference<Map<String, Object>>() {});
 
-    private Client client;
+    protected Client client;
     protected BulkProcessor bulkProcessor;
 
     protected RiverConfig riverConfig;

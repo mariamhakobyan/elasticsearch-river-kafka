@@ -54,6 +54,9 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
             case RAW_EXECUTE:
                 elasticsearchProducer = new RawMessageProducer(client, riverConfig, kafkaConsumer);
                 break;
+            case GENERIC_REQUEST:
+                elasticsearchProducer = new GenericRequestProducer(client, riverConfig, kafkaConsumer);
+                break;
         }
     }
 
