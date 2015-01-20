@@ -50,7 +50,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
         stats = new Stats();
         
         if(null != riverConfig.getStatsdHost()) {
-            logger.debug("Found statsd configuration. Starting client (%s@%s:%s; %ss log interval)",
+            logger.debug("Found statsd configuration. Starting client (prefix={}, host={}, port={}, interval={})",
                     riverConfig.getStatsdPrefix(), riverConfig.getStatsdHost(), riverConfig.getStatsdPort(),
                     riverConfig.getStatsdIntervalInSeconds());
 

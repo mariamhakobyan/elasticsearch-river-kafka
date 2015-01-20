@@ -25,8 +25,9 @@ public class Stats {
         clone.succeeded.set(succeeded.getAndSet(0));
         clone.flushCount.set(flushCount.getAndSet(0));
         clone.messagesReceived.set(messagesReceived.getAndSet(0));
+        
         clone.lastCommitOffsetByPartitionId.putAll(lastCommitOffsetByPartitionId);
-        clone.lastCommitOffsetByPartitionId.clear();
+        lastCommitOffsetByPartitionId.clear();
 
         return clone;
     }
