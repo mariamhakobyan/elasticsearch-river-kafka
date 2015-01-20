@@ -40,45 +40,42 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
      * For the given messages creates index document requests and adds them to the bulk processor queue, for
      * processing later when the size of bulk actions is reached.
      *
-     * @param messageSet given set of messages
+     * @param messageAndMetadata given message
      */
-    public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
+    public void addMessageToBulkProcessor(final MessageAndMetadata messageAndMetadata) {
+        final byte[] messageBytes = (byte[]) messageAndMetadata.message();
 
-        for (MessageAndMetadata messageAndMetadata : messageSet) {
-            final byte[] messageBytes = (byte[]) messageAndMetadata.message();
+        if (messageBytes == null || messageBytes.length == 0) return;
 
-            if (messageBytes == null || messageBytes.length == 0) return;
+        try {
+            // TODO - future improvement - support for protobuf messages
 
-            try {
-                // TODO - future improvement - support for protobuf messages
+            String message = null;
+            IndexRequest request = null;
 
-                String message = null;
-                IndexRequest request = null;
-
-                switch (riverConfig.getMessageType()) {
-                    case STRING:
-                        message = XContentFactory.jsonBuilder()
-                                .startObject()
-                                .field("value", new String(messageBytes, "UTF-8"))
-                                .endObject()
-                                .string();
-                        request = Requests.indexRequest(riverConfig.getIndexName()).
-                                type(riverConfig.getTypeName()).
-                                id(UUID.randomUUID().toString()).
-                                source(message);
-                        break;
-                    case JSON:
-                        final Map<String, Object> messageMap = reader.readValue(messageBytes);
-                        request = Requests.indexRequest(riverConfig.getIndexName()).
-                                type(riverConfig.getTypeName()).
-                                id(UUID.randomUUID().toString()).
-                                source(messageMap);
-                }
-
-                bulkProcessor.add(request);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            switch (riverConfig.getMessageType()) {
+                case STRING:
+                    message = XContentFactory.jsonBuilder()
+                            .startObject()
+                            .field("value", new String(messageBytes, "UTF-8"))
+                            .endObject()
+                            .string();
+                    request = Requests.indexRequest(riverConfig.getIndexName()).
+                            type(riverConfig.getTypeName()).
+                            id(UUID.randomUUID().toString()).
+                            source(message);
+                    break;
+                case JSON:
+                    final Map<String, Object> messageMap = reader.readValue(messageBytes);
+                    request = Requests.indexRequest(riverConfig.getIndexName()).
+                            type(riverConfig.getTypeName()).
+                            id(UUID.randomUUID().toString()).
+                            source(messageMap);
             }
+
+            bulkProcessor.add(request);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }

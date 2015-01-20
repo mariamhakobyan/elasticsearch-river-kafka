@@ -38,32 +38,30 @@ public class DeleteDocumentProducer extends ElasticSearchProducer {
      * For the given messages creates delete document requests and adds them to the bulk processor queue, for
      * processing later when the size of bulk actions is reached.
      *
-     * @param messageSet given set of messages
+     * @param messageAndMetadata given message
      */
-    public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
+    public void addMessageToBulkProcessor(final MessageAndMetadata messageAndMetadata) {
 
-        for (MessageAndMetadata messageAndMetadata : messageSet) {
-            final byte[] messageBytes = (byte[]) messageAndMetadata.message();
+        final byte[] messageBytes = (byte[]) messageAndMetadata.message();
 
-            if (messageBytes == null || messageBytes.length == 0) return;
+        if (messageBytes == null || messageBytes.length == 0) return;
 
-            try {
-                final Map<String, Object> messageMap = reader.readValue(messageBytes);
+        try {
+            final Map<String, Object> messageMap = reader.readValue(messageBytes);
 
-                if(messageMap.containsKey("id")) {
-                    String id = (String)messageMap.get("id");
+            if(messageMap.containsKey("id")) {
+                String id = (String)messageMap.get("id");
 
-                    final DeleteRequest request = Requests.deleteRequest(riverConfig.getIndexName()).
-                            type(riverConfig.getTypeName()).
-                            id(id);
+                final DeleteRequest request = Requests.deleteRequest(riverConfig.getIndexName()).
+                        type(riverConfig.getTypeName()).
+                        id(id);
 
-                    bulkProcessor.add(request);
-                } else {
-                    throw new IllegalArgumentException("No id provided in a message to delete a document from EL.");
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+                bulkProcessor.add(request);
+            } else {
+                throw new IllegalArgumentException("No id provided in a message to delete a document from EL.");
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }

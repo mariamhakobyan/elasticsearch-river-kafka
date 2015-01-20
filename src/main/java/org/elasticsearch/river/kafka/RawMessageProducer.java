@@ -38,22 +38,20 @@ public class RawMessageProducer extends ElasticSearchProducer {
      * Adds the given raw messages to the bulk processor queue, for processing later
      * when the size of bulk actions is reached.
      *
-     * @param messageSet given set of messages
+     * @param messageAndMetadata given message
      */
-    public void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet) {
-        for (MessageAndMetadata messageAndMetadata : messageSet) {
-            final byte[] messageBytes = (byte[]) messageAndMetadata.message();
-            try {
-                ByteBuffer byteBuffer = ByteBuffer.wrap(messageBytes);
-                bulkProcessor.add(
-                        new ChannelBufferBytesReference(new ByteBufferBackedChannelBuffer(byteBuffer)),
-                        false,
-                        riverConfig.getIndexName(),
-                        riverConfig.getTypeName()
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    public void addMessageToBulkProcessor(final MessageAndMetadata messageAndMetadata) {
+        final byte[] messageBytes = (byte[]) messageAndMetadata.message();
+        try {
+            ByteBuffer byteBuffer = ByteBuffer.wrap(messageBytes);
+            bulkProcessor.add(
+                    new ChannelBufferBytesReference(new ByteBufferBackedChannelBuffer(byteBuffer)),
+                    false,
+                    riverConfig.getIndexName(),
+                    riverConfig.getTypeName()
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

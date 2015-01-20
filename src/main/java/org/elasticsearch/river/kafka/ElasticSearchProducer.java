@@ -55,6 +55,9 @@ public abstract class ElasticSearchProducer {
     }
 
     private void createBulkProcessor(final KafkaConsumer kafkaConsumer) {
+        logger.info("Creating bulk processor [flush interval={}, bulk size={}, concurrent requests={}]",
+                riverConfig.getFlushIntervalInSeconds(), riverConfig.getBulkSize(), riverConfig.getConcurrentRequests());
+
         bulkProcessor = BulkProcessor.builder(client,
                 new BulkProcessor.Listener() {
                     @Override
@@ -77,7 +80,7 @@ public abstract class ElasticSearchProducer {
                     }
                 })
                 .setBulkActions(riverConfig.getBulkSize())
-                .setFlushInterval(TimeValue.timeValueHours(12))
+                .setFlushInterval(TimeValue.timeValueSeconds(riverConfig.getFlushIntervalInSeconds()))
                 .setConcurrentRequests(riverConfig.getConcurrentRequests())
                 .build();
     }
@@ -86,9 +89,9 @@ public abstract class ElasticSearchProducer {
      * For the given messages executes the specified operation type and adds the results bulk processor queue, for
      * processing later when the size of bulk actions is reached.
      *
-     * @param messageSet given set of messages
+     * @param messageAndMetadata given message
      */
-    public abstract void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet);
+    public abstract void addMessageToBulkProcessor(final MessageAndMetadata messageAndMetadata);
 
     public void closeBulkProcessor() {
         bulkProcessor.close();

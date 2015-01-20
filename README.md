@@ -65,6 +65,7 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
         "index" : <index.name>,
         "type" : <mapping.type.name>,
         "bulk.size" : <bulk.size>,
+        "flush.interval" : <flush.interval>,
         "concurrent.requests" : <concurrent.requests>,
         "action.type" : <action.type>
      }
@@ -88,6 +89,7 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
          "index" : "kafka-index",
          "type" : "status",
          "bulk.size" : 100,
+         "flush.interval" : 720000,
          "concurrent.requests" : 1,
          "action.type" : "index"
       }
@@ -121,14 +123,13 @@ The detailed description of each parameter:
 * `index` (optional) - The name of elasticsearch index. Default is: `kafka-index`
 * `type` (optional) - The mapping type of elasticsearch index. Default is: `status`
 * `bulk.size` (optional) - The number of messages to be bulk indexed into elasticsearch. Default is: `100`
+* `flush.interval` (optional) - The number of seconds after which any remaining messages get flushed to elasticsearch, even if the number of messages has not reached. Default is: `720000` (12 hours)
 * `concurrent.requests` (optional) - The number of concurrent requests of indexing that will be allowed. A value of 0 means that only a single request will be allowed to be executed. A value of 1 means 1 concurrent request is allowed to be executed while accumulating new bulk requests. Default is: `1`
 * `action.type` (optional) - The action type against how the messages should be processed. Default is: `index`. The following options are available:
    - `index` : Creates documents in ES with the `value` field set to the received message.
    - `delete` : Deletes documents from ES based on `id` field set in the received message.
    - `raw.execute` : Execute incoming messages as a raw query.
-
-Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached. 
-
+   
 
 To delete the existing river, execute:
  
