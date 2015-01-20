@@ -80,7 +80,7 @@ public abstract class ElasticSearchProducer {
                     }
                 })
                 .setBulkActions(riverConfig.getBulkSize())
-                .setFlushInterval(TimeValue.timeValueSeconds(1l))
+                .setFlushInterval(TimeValue.timeValueSeconds(riverConfig.getFlushIntervalInSeconds()))
                 .setConcurrentRequests(riverConfig.getConcurrentRequests())
                 .build();
     }
