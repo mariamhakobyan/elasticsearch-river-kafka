@@ -67,7 +67,13 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
         "bulk.size" : <bulk.size>,
         "concurrent.requests" : <concurrent.requests>,
         "action.type" : <action.type>
-     }
+    },
+    "statsd" : {
+        "host" : <statsd.host>,
+        "prefix" : <statsd.prefix>,
+        "port" : <statsd.port>,
+        "log.interval" : <statsd.log.interval>
+    }
  }'
  ```
  * ***NOTE***: Type "kafka" is required and must not be changed. It corresponds the type, given in the source code, by which elasticsearch is able to associate created river with the installed plugin.
@@ -90,6 +96,12 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
          "bulk.size" : 100,
          "concurrent.requests" : 1,
          "action.type" : "index"
+      },
+      "statsd": {
+         "host" : "localhost",
+         "prefix" : "kafka.river",
+         "port" : 8125,
+         "log.interval" : 10
       }
   }'
   ```
@@ -127,7 +139,14 @@ The detailed description of each parameter:
    - `delete` : Deletes documents from ES based on `id` field set in the received message.
    - `raw.execute` : Execute incoming messages as a raw query.
 
-Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached. 
+Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached.
+ 
+#### Statsd configuration:
+
+* `host` (optional) - The statsd server host name. Default is: `localhost`
+* `port` (optional) - The statsd server port number. Default is: 8125
+* `prefix` (optional) - Prefix to be added to all statsd metric keys. Default is: `kafka.river`
+* `log.interval` (optional) - The interval, in seconds, in which to report metrics to the statsd server. Default is: `10` (10 seconds)
 
 
 To delete the existing river, execute:

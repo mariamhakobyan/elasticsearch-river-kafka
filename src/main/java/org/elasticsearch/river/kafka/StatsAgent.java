@@ -8,6 +8,7 @@ public class StatsAgent {
     private String keyPrefix;
 
     public StatsAgent(RiverConfig riverConfig) {
+        
         this.client = new NonBlockingStatsDClient(
                 riverConfig.getStatsdPrefix(),
                 riverConfig.getStatsdHost(),
