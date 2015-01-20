@@ -42,10 +42,10 @@ public class RiverConfig {
     private static final String ACTION_TYPE = "action.type";
     
     /* StatsD config */
-    private static final String STATSD_PREFIX = "statsd.prefix";
-    private static final String STATSD_HOST = "statsd.host";
-    private static final String STATSD_PORT = "statsd.port";
-    private static final String STATSD_INTERVAL_IN_SECONDS = "statsd.interval";
+    private static final String STATSD_PREFIX = "prefix";
+    private static final String STATSD_HOST = "host";
+    private static final String STATSD_PORT = "port";
+    private static final String STATSD_INTERVAL_IN_SECONDS = "log.interval";
 
 
     private String zookeeperConnect;

@@ -50,7 +50,9 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
         stats = new Stats();
         
         if(null != riverConfig.getStatsdHost()) {
-            logger.debug("Found statsd configuration. Starting client...");
+            logger.debug("Found statsd configuration. Starting client (%s@%s:%s; %ss log interval)",
+                    riverConfig.getStatsdPrefix(), riverConfig.getStatsdHost(), riverConfig.getStatsdPort(),
+                    riverConfig.getStatsdIntervalInSeconds());
 
             statsAgent = new StatsAgent(riverConfig);
 
@@ -107,9 +109,9 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
     private class LogStatsTask extends TimerTask {
         @Override
         public void run() {
-            logger.debug("Logging stats {}", stats);
-            statsAgent.logStats(stats);
-            stats.resetStats();
+            Stats clone = stats.getCloneAndReset();
+            logger.debug("Logging stats {}", clone);
+            statsAgent.logStats(clone);
         }
     }
 }

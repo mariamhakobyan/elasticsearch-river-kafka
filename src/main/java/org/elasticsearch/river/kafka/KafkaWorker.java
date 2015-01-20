@@ -105,7 +105,11 @@ public class KafkaWorker implements Runnable {
 
                 messageSet.add(messageAndMetadata);
                 counter++;
-                stats.messagesReceived++;
+                stats.messagesReceived.incrementAndGet();
+                stats.lastCommitOffsetByPartitionId.put(
+                        messageAndMetadata.partition(),
+                        messageAndMetadata.offset()
+                );
 
                 if(counter >= riverConfig.getBulkSize()) {
                     elasticsearchProducer.addMessagesToBulkProcessor(messageSet);

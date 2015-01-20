@@ -62,7 +62,7 @@ public abstract class ElasticSearchProducer {
                 new BulkProcessor.Listener() {
                     @Override
                     public void beforeBulk(long executionId, BulkRequest request) {
-                        stats.flushCount++;
+                        stats.flushCount.incrementAndGet();
                         logger.info("Index: {}: Going to execute bulk request composed of {} actions.", riverConfig.getIndexName(), request.numberOfActions());
                     }
 
@@ -72,10 +72,10 @@ public abstract class ElasticSearchProducer {
 
                         for (BulkItemResponse item : response.getItems()) {
                             if(item.isFailed()) {
-                                stats.failed++;
+                                stats.failed.incrementAndGet();
                             }
                             else {
-                                stats.succeeded++;
+                                stats.succeeded.incrementAndGet();
                             }
                         }
 
@@ -86,7 +86,7 @@ public abstract class ElasticSearchProducer {
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-                        stats.failed += request.numberOfActions();
+                        stats.failed.addAndGet(request.numberOfActions());
                         logger.warn("Index: {}: Error executing bulk.", failure, riverConfig.getIndexName());
                     }
                 })
