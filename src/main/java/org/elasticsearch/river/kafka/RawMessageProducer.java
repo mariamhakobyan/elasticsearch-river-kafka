@@ -30,8 +30,8 @@ import java.util.Set;
  */
 public class RawMessageProducer extends ElasticSearchProducer {
 
-    public RawMessageProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer) {
-        super(client, riverConfig, kafkaConsumer);
+    public RawMessageProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer, Stats stats) {
+        super(client, riverConfig, kafkaConsumer, stats);
     }
 
     /**

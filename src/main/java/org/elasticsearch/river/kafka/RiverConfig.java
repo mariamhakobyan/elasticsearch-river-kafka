@@ -40,6 +40,12 @@ public class RiverConfig {
     private static final String BULK_SIZE = "bulk.size";
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
     private static final String ACTION_TYPE = "action.type";
+    
+    /* StatsD config */
+    private static final String STATSD_PREFIX = "statsd.prefix";
+    private static final String STATSD_HOST = "statsd.host";
+    private static final String STATSD_PORT = "statsd.port";
+    private static final String STATSD_INTERVAL_IN_SECONDS = "statsd.interval";
 
 
     private String zookeeperConnect;
@@ -51,6 +57,11 @@ public class RiverConfig {
     private int bulkSize;
     private int concurrentRequests;
     private ActionType actionType;
+    
+    private String statsdPrefix;
+    private String statsdHost;
+    private int statsdPort;
+    private int statsdIntervalInSeconds;
 
 
     public RiverConfig(RiverName riverName, RiverSettings riverSettings) {
@@ -86,6 +97,15 @@ public class RiverConfig {
             bulkSize = 100;
             concurrentRequests = 1;
             actionType = ActionType.INDEX;
+        }
+        
+        // Extract Statsd related configuration
+        if (riverSettings.settings().containsKey("statsd")) {
+            Map<String, Object> statsdSettings = (Map<String, Object>) riverSettings.settings().get("statsd");
+            statsdHost = XContentMapValues.nodeStringValue(statsdSettings.get(STATSD_HOST), "localhost");
+            statsdPrefix = XContentMapValues.nodeStringValue(statsdSettings.get(STATSD_PREFIX), "kafka_river");
+            statsdPort = XContentMapValues.nodeIntegerValue(statsdSettings.get(STATSD_PORT), 8125);
+            statsdIntervalInSeconds = XContentMapValues.nodeIntegerValue(statsdSettings.get(STATSD_INTERVAL_IN_SECONDS), 10);
         }
     }
 
@@ -177,5 +197,21 @@ public class RiverConfig {
 
     ActionType getActionType() {
         return actionType;
+    }
+    
+    String getStatsdHost() {
+        return statsdHost;
+    }
+
+    String getStatsdPrefix() {
+        return statsdPrefix;
+    }
+
+    int getStatsdPort() {
+        return statsdPort;
+    }
+    
+    int getStatsdIntervalInSeconds() {
+        return statsdIntervalInSeconds;
     }
 }

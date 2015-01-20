@@ -23,8 +23,8 @@ import org.elasticsearch.river.River;
 import org.elasticsearch.river.RiverName;
 import org.elasticsearch.river.RiverSettings;
 
-import static org.elasticsearch.river.kafka.RiverConfig.*;
-import static org.elasticsearch.river.kafka.RiverConfig.ActionType.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This is the actual river implementation, which starts a thread to read messages from kafka and put them into elasticsearch.
@@ -34,7 +34,11 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
     private KafkaConsumer kafkaConsumer;
     private ElasticSearchProducer elasticsearchProducer;
     private RiverConfig riverConfig;
-
+    
+    private Stats stats;
+    private StatsAgent statsAgent;
+    private Timer timer;
+    
     private Thread thread;
 
     @Inject
@@ -43,16 +47,30 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
         riverConfig = new RiverConfig(riverName, riverSettings);
         kafkaConsumer = new KafkaConsumer(riverConfig);
+        stats = new Stats();
+        
+        if(null != riverConfig.getStatsdHost()) {
+            logger.debug("Found statsd configuration. Starting client...");
+
+            statsAgent = new StatsAgent(riverConfig);
+
+            int intervalInMs = riverConfig.getStatsdIntervalInSeconds() * 1000;
+            timer = new Timer();
+            timer.scheduleAtFixedRate(new LogStatsTask(), intervalInMs, intervalInMs);
+        }
+        else {
+            logger.debug("No statsd configuration found. Will not report stats...");
+        }
 
         switch (riverConfig.getActionType()) {
             case INDEX:
-                elasticsearchProducer = new IndexDocumentProducer(client, riverConfig, kafkaConsumer);
+                elasticsearchProducer = new IndexDocumentProducer(client, riverConfig, kafkaConsumer, stats);
                 break;
             case DELETE:
-                elasticsearchProducer = new DeleteDocumentProducer(client, riverConfig, kafkaConsumer);
+                elasticsearchProducer = new DeleteDocumentProducer(client, riverConfig, kafkaConsumer, stats);
                 break;
             case RAW_EXECUTE:
-                elasticsearchProducer = new RawMessageProducer(client, riverConfig, kafkaConsumer);
+                elasticsearchProducer = new RawMessageProducer(client, riverConfig, kafkaConsumer, stats);
                 break;
         }
     }
@@ -62,7 +80,7 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
         try {
             logger.debug("Index: {}: Starting Kafka River...", riverConfig.getIndexName());
-            final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer, riverConfig);
+            final KafkaWorker kafkaWorker = new KafkaWorker(kafkaConsumer, elasticsearchProducer, riverConfig, stats);
 
             thread = EsExecutors.daemonThreadFactory(settings.globalSettings(), "Kafka River Worker").newThread(kafkaWorker);
             thread.start();
@@ -78,7 +96,20 @@ public class KafkaRiver extends AbstractRiverComponent implements River {
 
         elasticsearchProducer.closeBulkProcessor();
         kafkaConsumer.shutdown();
+        
+        if(null != timer) {
+            timer.cancel();
+        }
 
         thread.interrupt();
+    }
+    
+    private class LogStatsTask extends TimerTask {
+        @Override
+        public void run() {
+            logger.debug("Logging stats {}", stats);
+            statsAgent.logStats(stats);
+            stats.resetStats();
+        }
     }
 }

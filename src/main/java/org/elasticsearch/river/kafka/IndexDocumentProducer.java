@@ -32,8 +32,8 @@ import java.util.UUID;
  */
 public class IndexDocumentProducer extends ElasticSearchProducer {
 
-    public IndexDocumentProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer) {
-        super(client, riverConfig, kafkaConsumer);
+    public IndexDocumentProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer, Stats stats) {
+        super(client, riverConfig, kafkaConsumer, stats);
     }
 
     /**
