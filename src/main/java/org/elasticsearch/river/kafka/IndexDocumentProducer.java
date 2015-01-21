@@ -15,15 +15,18 @@
  */
 package org.elasticsearch.river.kafka;
 
-import kafka.message.MessageAndMetadata;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.Requests;
-import org.elasticsearch.common.xcontent.XContentFactory;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import kafka.message.MessageAndMetadata;
+
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.Requests;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.xcontent.XContentFactory;
 
 /**
  * Producer to index documents. Creates index document requests, which are executed with Bulk API.
@@ -31,6 +34,8 @@ import java.util.UUID;
  * @author Mariam Hakobyan
  */
 public class IndexDocumentProducer extends ElasticSearchProducer {
+
+    private static final ESLogger logger = ESLoggerFactory.getLogger(IndexDocumentProducer.class.getName());
 
     public IndexDocumentProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer) {
         super(client, riverConfig, kafkaConsumer);
@@ -77,7 +82,7 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
 
                 bulkProcessor.add(request);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error("addMessagesToBulkProcessor exception", ex);
             }
         }
     }

@@ -15,13 +15,16 @@
  */
 package org.elasticsearch.river.kafka;
 
-import kafka.message.MessageAndMetadata;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.common.bytes.ChannelBufferBytesReference;
-import org.elasticsearch.common.netty.buffer.ByteBufferBackedChannelBuffer;
-
 import java.nio.ByteBuffer;
 import java.util.Set;
+
+import kafka.message.MessageAndMetadata;
+
+import org.elasticsearch.client.Client;
+import org.elasticsearch.common.bytes.ChannelBufferBytesReference;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.netty.buffer.ByteBufferBackedChannelBuffer;
 
 /**
  * Producer to executed raw messages as bytes array directly using Bulk API.
@@ -29,6 +32,8 @@ import java.util.Set;
  * @author Mariam Hakobyan
  */
 public class RawMessageProducer extends ElasticSearchProducer {
+
+    private static final ESLogger logger = ESLoggerFactory.getLogger(RawMessageProducer.class.getName());
 
     public RawMessageProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer) {
         super(client, riverConfig, kafkaConsumer);
@@ -52,7 +57,7 @@ public class RawMessageProducer extends ElasticSearchProducer {
                         riverConfig.getTypeName()
                 );
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("addMessagesToBulkProcessor exception", e);
             }
         }
     }

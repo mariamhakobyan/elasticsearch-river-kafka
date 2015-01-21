@@ -15,13 +15,16 @@
  */
 package org.elasticsearch.river.kafka;
 
+import java.util.Map;
+import java.util.Set;
+
 import kafka.message.MessageAndMetadata;
+
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
-
-import java.util.Map;
-import java.util.Set;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 
 /**
  * Producer to delete documents. Creates delete document requests, which are executed with Bulk API.
@@ -30,6 +33,8 @@ import java.util.Set;
  */
 public class DeleteDocumentProducer extends ElasticSearchProducer {
 
+    private static final ESLogger logger = ESLoggerFactory.getLogger(DeleteDocumentProducer.class.getName());
+    
     public DeleteDocumentProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer) {
         super(client, riverConfig, kafkaConsumer);
     }
@@ -62,7 +67,7 @@ public class DeleteDocumentProducer extends ElasticSearchProducer {
                     throw new IllegalArgumentException("No id provided in a message to delete a document from EL.");
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error("addMessagesToBulkProcessor exception", ex);
             }
         }
     }
