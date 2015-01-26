@@ -126,6 +126,21 @@ The detailed description of each parameter:
    - `index` : Creates documents in ES with the `value` field set to the received message.
    - `delete` : Deletes documents from ES based on `id` field set in the received message.
    - `raw.execute` : Execute incoming messages as a raw query.
+   - `generic.request` : Encapsulate generic request in Json. Currently supported are Bulk and Delete by query. Here are the accepted Json queries :
+
+```
+{
+	"type":"bulk",
+	"content":"{\"index\":{\"_index\":\"test\",\"_type\":\"type1\",\"_id\":\"1\"}}\n{\"field1\":\"value1\"}"
+}
+
+or
+
+{
+	"type":"delete_by_query",
+	"query":"{\"query\":{\"match_all\":{}}}"
+}
+```
 
 Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached. 
 
