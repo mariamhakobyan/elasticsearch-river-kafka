@@ -15,6 +15,8 @@
  */
 package org.elasticsearch.river.kafka;
 
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
 import org.elasticsearch.river.RiverName;
 import org.elasticsearch.river.RiverSettings;
@@ -41,6 +43,7 @@ public class RiverConfig {
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
     private static final String ACTION_TYPE = "action.type";
 
+    private static final ESLogger logger = ESLoggerFactory.getLogger(RiverConfig.class.getName());
 
     private String zookeeperConnect;
     private int zookeeperConnectionTimeout;
@@ -110,8 +113,9 @@ public class RiverConfig {
             if(value == null) throw new IllegalArgumentException();
 
             for(ActionType values : values()) {
-                if(value.equalsIgnoreCase(values.toValue()))
+                if(value.equalsIgnoreCase(values.toValue())) {
                     return values;
+                }
             }
 
             throw new IllegalArgumentException("ActionType with value " + value + " does not exist.");

@@ -23,9 +23,6 @@ import org.elasticsearch.river.River;
 import org.elasticsearch.river.RiverName;
 import org.elasticsearch.river.RiverSettings;
 
-import static org.elasticsearch.river.kafka.RiverConfig.*;
-import static org.elasticsearch.river.kafka.RiverConfig.ActionType.*;
-
 /**
  * This is the actual river implementation, which starts a thread to read messages from kafka and put them into elasticsearch.
  */

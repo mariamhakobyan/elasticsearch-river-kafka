@@ -105,18 +105,18 @@ The detailed description of each parameter:
    *example:*
       ```json
        "_source": {
-                      "name": "John",
-                      "age": 28
-                   }
+          "name": "John",
+          "age": 28
+       }
       ```
    
    - `string` : Inserts string message into ES as a documet, where the key name is `value`, and the value is the received message.
    *example:*
-   ```json
-    "_source": {
-                   "value": "received text message"
-                }
-   ```
+    ```json
+     "_source": {
+          "value": "received text message"
+     }
+    ```
    
 * `index` (optional) - The name of elasticsearch index. Default is: `kafka-index`
 * `type` (optional) - The mapping type of elasticsearch index. Default is: `status`

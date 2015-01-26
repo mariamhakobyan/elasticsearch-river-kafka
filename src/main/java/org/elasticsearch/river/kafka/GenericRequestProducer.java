@@ -17,6 +17,8 @@ import java.util.Set;
  * This producer takes  a JSon representing an ElasticSearch request.
  *
  * It was added to support non bulkable operations that we would like to manage threw a Kafka queue. For instance delete by query.
+ *
+ * @author Benoit Tellier from Linagora
  */
 public class GenericRequestProducer extends ElasticSearchProducer {
 
@@ -66,6 +68,7 @@ public class GenericRequestProducer extends ElasticSearchProducer {
                     logger.warn("Unknown TYPE provided");
                 }
             } catch (Exception ex) {
+                logger.error("Exception", ex);
                 ex.printStackTrace();
             }
         }
