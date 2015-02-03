@@ -23,7 +23,6 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Producer to index documents. Creates index document requests, which are executed with Bulk API.
@@ -64,14 +63,12 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
                                 .string();
                         request = Requests.indexRequest(riverConfig.getIndexName()).
                                 type(riverConfig.getTypeName()).
-                                id(UUID.randomUUID().toString()).
                                 source(message);
                         break;
                     case JSON:
                         final Map<String, Object> messageMap = reader.readValue(messageBytes);
                         request = Requests.indexRequest(riverConfig.getIndexName()).
                                 type(riverConfig.getTypeName()).
-                                id(UUID.randomUUID().toString()).
                                 source(messageMap);
                 }
 
