@@ -71,9 +71,9 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
                         final Map<String, Object> messageMap = reader.readValue(messageBytes);
 
                         String id;
-                        if (messageMap.containsKey("id")) {
-                            id = (String)messageMap.get("id");
-                            messageMap.remove("id");
+                        if (messageMap.containsKey("_id")) {
+                            id = (String)messageMap.get("_id");
+                            messageMap.remove("_id");
                         } else {
                             id = UUID.randomUUID().toString();
                         }                       
