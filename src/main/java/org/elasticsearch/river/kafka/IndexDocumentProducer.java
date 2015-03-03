@@ -69,9 +69,18 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
                         break;
                     case JSON:
                         final Map<String, Object> messageMap = reader.readValue(messageBytes);
+
+                        String id;
+                        if (messageMap.containsKey("_id")) {
+                            id = (String)messageMap.get("_id");
+                            messageMap.remove("_id");
+                        } else {
+                            id = UUID.randomUUID().toString();
+                        }                       
+
                         request = Requests.indexRequest(riverConfig.getIndexName()).
                                 type(riverConfig.getTypeName()).
-                                id(UUID.randomUUID().toString()).
+                                id(id).
                                 source(messageMap);
                 }
 
