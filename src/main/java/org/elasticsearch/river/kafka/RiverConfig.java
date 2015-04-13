@@ -29,10 +29,11 @@ import java.util.Map;
 public class RiverConfig {
 
     /* Kakfa config */
-    private static final String ZOOKEEPER_CONNECT = "zookeeper.connect";
-    private static final String ZOOKEEPER_CONNECTION_TIMEOUT = "zookeeper.connection.timeout.ms";
+    public static final String ZOOKEEPER_CONNECT = "zookeeper.connect";
+    public static final String ZOOKEEPER_CONNECTION_TIMEOUT = "zookeeper.connection.timeout.ms";
     private static final String TOPIC = "topic";
     private static final String MESSAGE_TYPE = "message.type";
+    public static final String CONSUMER_GROUP_ID = "group.id";
 
     /* Elasticsearch config */
     private static final String INDEX_NAME = "index";
@@ -41,6 +42,7 @@ public class RiverConfig {
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
     private static final String ACTION_TYPE = "action.type";
 
+    public final static String DEFAULT_GROUP_ID = "elasticsearch-kafka-river";
 
     private String zookeeperConnect;
     private int zookeeperConnectionTimeout;
@@ -51,6 +53,7 @@ public class RiverConfig {
     private int bulkSize;
     private int concurrentRequests;
     private ActionType actionType;
+    private final String consumerGroup;
 
 
     public RiverConfig(RiverName riverName, RiverSettings riverSettings) {
@@ -60,6 +63,7 @@ public class RiverConfig {
             Map<String, Object> kafkaSettings = (Map<String, Object>) riverSettings.settings().get("kafka");
 
             topic = (String) kafkaSettings.get(TOPIC);
+            consumerGroup = XContentMapValues.nodeStringValue(kafkaSettings.get(CONSUMER_GROUP_ID), DEFAULT_GROUP_ID);
             zookeeperConnect = XContentMapValues.nodeStringValue(kafkaSettings.get(ZOOKEEPER_CONNECT), "localhost");
             zookeeperConnectionTimeout = XContentMapValues.nodeIntegerValue(kafkaSettings.get(ZOOKEEPER_CONNECTION_TIMEOUT), 10000);
             messageType = MessageType.fromValue(XContentMapValues.nodeStringValue(kafkaSettings.get(MESSAGE_TYPE),
@@ -69,6 +73,7 @@ public class RiverConfig {
             zookeeperConnectionTimeout = 10000;
             topic = "elasticsearch-river-kafka";
             messageType = MessageType.JSON;
+            consumerGroup = DEFAULT_GROUP_ID;
         }
 
         // Extract ElasticSearch related configuration
@@ -87,6 +92,10 @@ public class RiverConfig {
             concurrentRequests = 1;
             actionType = ActionType.INDEX;
         }
+    }
+
+    public String getConsumerGroup() {
+        return consumerGroup;
     }
 
     public enum ActionType {
