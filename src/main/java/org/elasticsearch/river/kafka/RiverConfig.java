@@ -49,16 +49,16 @@ public class RiverConfig {
     private int zookeeperConnectionTimeout;
     private String topic;
     private MessageType messageType;
-    private String indexName;
     private String typeName;
     private int bulkSize;
     private int concurrentRequests;
     private ActionType actionType;
     private final String consumerGroup;
     private final RolloverInterval rolloverInterval;
-
+    private final TimeBasedIndexNameResolver indexNameResolver;
 
     public RiverConfig(RiverName riverName, RiverSettings riverSettings) {
+        String indexName;
 
         // Extract kafka related configuration
         if (riverSettings.settings().containsKey("kafka")) {
@@ -82,7 +82,7 @@ public class RiverConfig {
         if (riverSettings.settings().containsKey("index")) {
             Map<String, Object> indexSettings = (Map<String, Object>) riverSettings.settings().get("index");
             indexName = XContentMapValues.nodeStringValue(indexSettings.get(INDEX_NAME), riverName.name());
-            String rolloverValue = XContentMapValues.nodeStringValue(indexSettings.get(ROLLOVER_INTERVAL), RolloverInterval.DAY.toValue());
+            String rolloverValue = XContentMapValues.nodeStringValue(indexSettings.get(ROLLOVER_INTERVAL), RolloverInterval.NONE.toValue());
             rolloverInterval = RolloverInterval.fromValue(rolloverValue);
             typeName = XContentMapValues.nodeStringValue(indexSettings.get(MAPPING_TYPE), "status");
             bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get(BULK_SIZE), 100);
@@ -95,8 +95,10 @@ public class RiverConfig {
             bulkSize = 100;
             concurrentRequests = 1;
             actionType = ActionType.INDEX;
-            rolloverInterval = RolloverInterval.DAY;
+            rolloverInterval = RolloverInterval.NONE;
         }
+
+        indexNameResolver = new TimeBasedIndexNameResolver(indexName, rolloverInterval);
     }
 
     public String getConsumerGroup() {
@@ -178,7 +180,7 @@ public class RiverConfig {
     }
 
     String getIndexName() {
-        return indexName;
+        return indexNameResolver.getIndexName();
     }
 
     String getTypeName() {

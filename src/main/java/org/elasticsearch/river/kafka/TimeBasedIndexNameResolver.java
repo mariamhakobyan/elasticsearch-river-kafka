@@ -6,24 +6,23 @@ import org.elasticsearch.common.joda.time.DateTime;
  * Resolves the elasticsearch index using time-based configuration settings.
  * Created by kangell on 4/14/2015.
  */
-public class TimeBasedIndexNameResolver implements IndexNameResolver {
-    private final RiverConfig config;
+public class TimeBasedIndexNameResolver {
     private String currentIndexName;
     private DateTime nextRollOver;
+    private final String baseIndexName;
     private RolloverInterval rolloverInterval;
 
-    public TimeBasedIndexNameResolver(RiverConfig config) {
-        this(config, DateTime.now());
+    public TimeBasedIndexNameResolver(String baseIndexName, RolloverInterval rolloverInterval) {
+        this(baseIndexName, rolloverInterval, DateTime.now());
     }
 
-    public TimeBasedIndexNameResolver(RiverConfig config, DateTime initialDate) {
-        this.config = config;
-        this.rolloverInterval = config.getRolloverInterval();
+    public TimeBasedIndexNameResolver(String baseIndexName, RolloverInterval rolloverInterval, DateTime initialDate) {
+        this.baseIndexName = baseIndexName;
+        this.rolloverInterval = rolloverInterval;
         setNextRollOver(initialDate);
         setCurrentIndexName(initialDate);
     }
 
-    @Override
     public String getIndexName() {
         if (currentIndexName == null) {
             return setCurrentIndexName(DateTime.now());
@@ -36,19 +35,22 @@ public class TimeBasedIndexNameResolver implements IndexNameResolver {
 
     private String setCurrentIndexName(DateTime now) {
 
-        switch (rolloverInterval){
+        switch (rolloverInterval) {
 
+            case NONE:
+                currentIndexName = baseIndexName;
+                break;
             case WEEK:
                 final DateTime weekDate = now.weekOfWeekyear().roundFloorCopy();
-                currentIndexName = String.format("%s-%04d.%02d", config.getIndexName(), weekDate.getYear(), weekDate.getWeekOfWeekyear());
+                currentIndexName = String.format("%s-%04d.%02d", baseIndexName, weekDate.getYear(), weekDate.getWeekOfWeekyear());
                 break;
             case DAY:
                 final DateTime dayDate = now.dayOfYear().roundFloorCopy();
-                currentIndexName = String.format("%s-%04d.%02d.%02d", config.getIndexName(), dayDate.getYear(), dayDate.getMonthOfYear(), dayDate.getDayOfMonth());
+                currentIndexName = String.format("%s-%04d.%02d.%02d", baseIndexName, dayDate.getYear(), dayDate.getMonthOfYear(), dayDate.getDayOfMonth());
                 break;
             case HOUR:
                 final DateTime hourDate = now.hourOfDay().roundFloorCopy();
-                currentIndexName = String.format("%s-%04d.%02d.%02d.%02d", config.getIndexName(), hourDate.getYear(), hourDate.getMonthOfYear(), hourDate.getDayOfMonth(), hourDate.getHourOfDay());
+                currentIndexName = String.format("%s-%04d.%02d.%02d.%02d", baseIndexName, hourDate.getYear(), hourDate.getMonthOfYear(), hourDate.getDayOfMonth(), hourDate.getHourOfDay());
                 break;
         }
 
@@ -65,6 +67,9 @@ public class TimeBasedIndexNameResolver implements IndexNameResolver {
 
     private void setNextRollOver(DateTime now) {
         switch (rolloverInterval){
+            case NONE:
+                nextRollOver = now.year().roundFloorCopy().plusYears(100);
+                break;
             case WEEK:
                 nextRollOver = now.dayOfYear().roundFloorCopy().minusDays(now.getDayOfWeek()).plusDays(7);
                 break;

@@ -14,13 +14,11 @@ import static org.junit.Assert.*;
  * Created by kangell on 4/14/2015.
  */
 public class TimeBasedIndexNameResolverTest {
+    final static String INDEX = "test-index";
 
     @Test
     public void testRolloverDateDay() {
-        final Map<String, Object> settings = RiverConfigTest.getSettings(null, null);
-        ((Map<String, Object>)settings.get("index")).put(RiverConfig.ROLLOVER_INTERVAL, RolloverInterval.DAY.toValue());
-
-        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(RiverConfigTest.getRiverConfig(settings));
+        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(INDEX, RolloverInterval.DAY);
         final DateTime nextRollOver = testTarget.getNextRollOver();
         final DateTime now = DateTime.now();
         final DateTime expectedDateTime = new DateTime(now.getYear(), now.getMonthOfYear(), now.getDayOfMonth(), 0, 0).plusDays(1);
@@ -30,10 +28,7 @@ public class TimeBasedIndexNameResolverTest {
 
     @Test
     public void testRolloverDateWeek() {
-        final Map<String, Object> settings = RiverConfigTest.getSettings(null, null);
-        ((Map<String, Object>)settings.get("index")).put(RiverConfig.ROLLOVER_INTERVAL, RolloverInterval.WEEK.toValue());
-
-        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(RiverConfigTest.getRiverConfig(settings));
+        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(INDEX, RolloverInterval.WEEK);
         final DateTime nextRollOver = testTarget.getNextRollOver();
         final DateTime now = DateTime.now();
         final DateTime expectedDateTime = new DateTime(now.getYear(), now.getMonthOfYear(), now.getDayOfMonth()-now.getDayOfWeek(), 0, 0).plusDays(7);
@@ -43,10 +38,7 @@ public class TimeBasedIndexNameResolverTest {
 
     @Test
     public void testRolloverIndexNameDay() {
-        final Map<String, Object> settings = RiverConfigTest.getSettings(null, "test-index");
-        ((Map<String, Object>)settings.get("index")).put(RiverConfig.ROLLOVER_INTERVAL, RolloverInterval.DAY.toValue());
-
-        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(RiverConfigTest.getRiverConfig(settings));
+        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(INDEX, RolloverInterval.DAY);
         final String indexName = testTarget.getIndexName();
         final DateTime now = DateTime.now();
         final String expectedIndexName = String.format("test-index-%04d.%02d.%02d", now.getYear(), now.getMonthOfYear(), now.getDayOfMonth());
@@ -55,10 +47,7 @@ public class TimeBasedIndexNameResolverTest {
 
     @Test
     public void testRolloverIndexNameWeek() {
-        final Map<String, Object> settings = RiverConfigTest.getSettings(null, "test-index");
-        ((Map<String, Object>)settings.get("index")).put(RiverConfig.ROLLOVER_INTERVAL, RolloverInterval.WEEK.toValue());
-
-        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(RiverConfigTest.getRiverConfig(settings));
+        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(INDEX, RolloverInterval.WEEK);
         final String indexName = testTarget.getIndexName();
         final DateTime now = DateTime.now();
         final String expectedIndexName = String.format("test-index-%04d.%02d", now.getYear(), now.getWeekOfWeekyear());
@@ -67,10 +56,7 @@ public class TimeBasedIndexNameResolverTest {
 
     @Test
     public void testRolloverIndexNameHour() {
-        final Map<String, Object> settings = RiverConfigTest.getSettings(null, "test-index");
-        ((Map<String, Object>)settings.get("index")).put(RiverConfig.ROLLOVER_INTERVAL, RolloverInterval.HOUR.toValue());
-
-        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(RiverConfigTest.getRiverConfig(settings));
+        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(INDEX, RolloverInterval.HOUR);
         final String indexName = testTarget.getIndexName();
         final DateTime now = DateTime.now();
         final String expectedIndexName = String.format("test-index-%04d.%02d.%02d.%02d", now.getYear(), now.getMonthOfYear(), now.getDayOfMonth(), now.getHourOfDay());
@@ -79,11 +65,8 @@ public class TimeBasedIndexNameResolverTest {
 
     @Test
     public void testRolloverOfIndexName() {
-        final Map<String, Object> settings = RiverConfigTest.getSettings(null, "test-index");
-        ((Map<String, Object>)settings.get("index")).put(RiverConfig.ROLLOVER_INTERVAL, RolloverInterval.HOUR.toValue());
-
         // Create with an old date so it rolls over immediately.
-        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(RiverConfigTest.getRiverConfig(settings), DateTime.now().minusDays(1));
+        final TimeBasedIndexNameResolver testTarget = new TimeBasedIndexNameResolver(INDEX, RolloverInterval.HOUR, DateTime.now().minusDays(1));
         final String indexName = testTarget.getIndexName();
         final DateTime now = DateTime.now();
         final String expectedIndexName = String.format("test-index-%04d.%02d.%02d.%02d", now.getYear(), now.getMonthOfYear(), now.getDayOfMonth(), now.getHourOfDay());
