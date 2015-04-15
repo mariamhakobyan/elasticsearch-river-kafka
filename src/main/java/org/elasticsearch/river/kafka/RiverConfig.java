@@ -41,6 +41,7 @@ public class RiverConfig {
     private static final String BULK_SIZE = "bulk.size";
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
     private static final String ACTION_TYPE = "action.type";
+    public static final String ROLLOVER_INTERVAL = "rollover.interval";
 
     public final static String DEFAULT_GROUP_ID = "elasticsearch-kafka-river";
 
@@ -54,6 +55,7 @@ public class RiverConfig {
     private int concurrentRequests;
     private ActionType actionType;
     private final String consumerGroup;
+    private final RolloverInterval rolloverInterval;
 
 
     public RiverConfig(RiverName riverName, RiverSettings riverSettings) {
@@ -80,6 +82,8 @@ public class RiverConfig {
         if (riverSettings.settings().containsKey("index")) {
             Map<String, Object> indexSettings = (Map<String, Object>) riverSettings.settings().get("index");
             indexName = XContentMapValues.nodeStringValue(indexSettings.get(INDEX_NAME), riverName.name());
+            String rolloverValue = XContentMapValues.nodeStringValue(indexSettings.get(ROLLOVER_INTERVAL), RolloverInterval.DAY.toValue());
+            rolloverInterval = RolloverInterval.fromValue(rolloverValue);
             typeName = XContentMapValues.nodeStringValue(indexSettings.get(MAPPING_TYPE), "status");
             bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get(BULK_SIZE), 100);
             concurrentRequests = XContentMapValues.nodeIntegerValue(indexSettings.get(CONCURRENT_REQUESTS), 1);
@@ -91,11 +95,16 @@ public class RiverConfig {
             bulkSize = 100;
             concurrentRequests = 1;
             actionType = ActionType.INDEX;
+            rolloverInterval = RolloverInterval.DAY;
         }
     }
 
     public String getConsumerGroup() {
         return consumerGroup;
+    }
+
+    public RolloverInterval getRolloverInterval() {
+        return rolloverInterval;
     }
 
     public enum ActionType {
