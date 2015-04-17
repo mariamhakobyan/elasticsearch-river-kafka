@@ -59,40 +59,44 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
         "zookeeper.connect" : <zookeeper.connect>, 
         "zookeeper.connection.timeout.ms" : <zookeeper.connection.timeout.ms>,
         "topic" : <topic.name>,
-        "message.type" : <message.type>
+        "message.type" : <message.type>,
+        "group.id" : <consumer.group.id>
     },
     "index" : {
         "index" : <index.name>,
         "type" : <mapping.type.name>,
         "bulk.size" : <bulk.size>,
         "concurrent.requests" : <concurrent.requests>,
-        "action.type" : <action.type>
+        "action.type" : <action.type>,
+        "rollover.interval" : <rollover.interval>
      }
- }'
- ```
- * ***NOTE***: Type "kafka" is required and must not be changed. It corresponds the type, given in the source code, by which elasticsearch is able to associate created river with the installed plugin.
+}'
+```
  
- *Example:*
+* ***NOTE***: Type "kafka" is required and must not be changed. It corresponds the type, given in the source code, by which elasticsearch is able to associate created river with the installed plugin.
+ 
+*Example:*
 
- ```json
- curl -XPUT 'localhost:9200/_river/kafka-river/_meta' -d '
- {
-      "type" : "kafka",
-      "kafka" : {
-         "zookeeper.connect" : "localhost", 
-         "zookeeper.connection.timeout.ms" : 10000,
-         "topic" : "river",
-         "message.type" : "json"
-     },
-     "index" : {
-         "index" : "kafka-index",
-         "type" : "status",
-         "bulk.size" : 100,
-         "concurrent.requests" : 1,
-         "action.type" : "index"
-      }
-  }'
-  ```
+```json
+curl -XPUT 'localhost:9200/_river/kafka-river/_meta' -d '
+{
+     "type" : "kafka",
+     "kafka" : {
+        "zookeeper.connect" : "localhost", 
+        "zookeeper.connection.timeout.ms" : 10000,
+        "topic" : "river",
+        "message.type" : "json",
+        "group.id" : "kafka-consumer-group"
+    },
+    "index" : {
+        "index" : "kafka-index",
+        "type" : "status",
+        "bulk.size" : 100,
+        "concurrent.requests" : 1,
+        "action.type" : "index"
+     }
+}'
+```
  
 The detailed description of each parameter:
  
@@ -117,6 +121,8 @@ The detailed description of each parameter:
           "value": "received text message"
      }
     ```
+
+* `group.id` (optional) - It is highly recommended to crete a custom kafka consumer group ID for every unique elastic search cluster. Default is: `elasticsearch-kafka-river`
    
 * `index` (optional) - The name of elasticsearch index. Default is: `kafka-index`
 * `type` (optional) - The mapping type of elasticsearch index. Default is: `status`
@@ -126,9 +132,13 @@ The detailed description of each parameter:
    - `index` : Creates documents in ES with the `value` field set to the received message.
    - `delete` : Deletes documents from ES based on `id` field set in the received message.
    - `raw.execute` : Execute incoming messages as a raw query.
+* `rollover.interval` (optional) - The interval at which elasticsearch indexes will created by the river.  The name of the index is the `index-{formatted-date}`. Default is: `none` The following options are available:
+   - `none` : Creates a single index with named with the `index` property.
+   - `hour` : Creates a new index every hour named with the format `{index}-{yyyy.mm.dd.hh}`.
+   - `day` : (Recommended) Creates a new index every day named with the format `{index}-{yyyy.mm.dd}`.
+   - `week` : Creates a new index every week named with the format `{index}-{yyyy.ww}`.   
 
 Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached. 
-
 
 To delete the existing river, execute:
  

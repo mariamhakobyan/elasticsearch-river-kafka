@@ -29,10 +29,11 @@ import java.util.Map;
 public class RiverConfig {
 
     /* Kakfa config */
-    private static final String ZOOKEEPER_CONNECT = "zookeeper.connect";
-    private static final String ZOOKEEPER_CONNECTION_TIMEOUT = "zookeeper.connection.timeout.ms";
+    public static final String ZOOKEEPER_CONNECT = "zookeeper.connect";
+    public static final String ZOOKEEPER_CONNECTION_TIMEOUT = "zookeeper.connection.timeout.ms";
     private static final String TOPIC = "topic";
     private static final String MESSAGE_TYPE = "message.type";
+    public static final String CONSUMER_GROUP_ID = "group.id";
 
     /* Elasticsearch config */
     private static final String INDEX_NAME = "index";
@@ -40,26 +41,31 @@ public class RiverConfig {
     private static final String BULK_SIZE = "bulk.size";
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
     private static final String ACTION_TYPE = "action.type";
+    public static final String ROLLOVER_INTERVAL = "rollover.interval";
 
+    public final static String DEFAULT_GROUP_ID = "elasticsearch-kafka-river";
 
     private String zookeeperConnect;
     private int zookeeperConnectionTimeout;
     private String topic;
     private MessageType messageType;
-    private String indexName;
     private String typeName;
     private int bulkSize;
     private int concurrentRequests;
     private ActionType actionType;
-
+    private final String consumerGroup;
+    private final RolloverInterval rolloverInterval;
+    private final TimeBasedIndexNameResolver indexNameResolver;
 
     public RiverConfig(RiverName riverName, RiverSettings riverSettings) {
+        String indexName;
 
         // Extract kafka related configuration
         if (riverSettings.settings().containsKey("kafka")) {
             Map<String, Object> kafkaSettings = (Map<String, Object>) riverSettings.settings().get("kafka");
 
             topic = (String) kafkaSettings.get(TOPIC);
+            consumerGroup = XContentMapValues.nodeStringValue(kafkaSettings.get(CONSUMER_GROUP_ID), DEFAULT_GROUP_ID);
             zookeeperConnect = XContentMapValues.nodeStringValue(kafkaSettings.get(ZOOKEEPER_CONNECT), "localhost");
             zookeeperConnectionTimeout = XContentMapValues.nodeIntegerValue(kafkaSettings.get(ZOOKEEPER_CONNECTION_TIMEOUT), 10000);
             messageType = MessageType.fromValue(XContentMapValues.nodeStringValue(kafkaSettings.get(MESSAGE_TYPE),
@@ -69,12 +75,15 @@ public class RiverConfig {
             zookeeperConnectionTimeout = 10000;
             topic = "elasticsearch-river-kafka";
             messageType = MessageType.JSON;
+            consumerGroup = DEFAULT_GROUP_ID;
         }
 
         // Extract ElasticSearch related configuration
         if (riverSettings.settings().containsKey("index")) {
             Map<String, Object> indexSettings = (Map<String, Object>) riverSettings.settings().get("index");
             indexName = XContentMapValues.nodeStringValue(indexSettings.get(INDEX_NAME), riverName.name());
+            String rolloverValue = XContentMapValues.nodeStringValue(indexSettings.get(ROLLOVER_INTERVAL), RolloverInterval.NONE.toValue());
+            rolloverInterval = RolloverInterval.fromValue(rolloverValue);
             typeName = XContentMapValues.nodeStringValue(indexSettings.get(MAPPING_TYPE), "status");
             bulkSize = XContentMapValues.nodeIntegerValue(indexSettings.get(BULK_SIZE), 100);
             concurrentRequests = XContentMapValues.nodeIntegerValue(indexSettings.get(CONCURRENT_REQUESTS), 1);
@@ -86,7 +95,18 @@ public class RiverConfig {
             bulkSize = 100;
             concurrentRequests = 1;
             actionType = ActionType.INDEX;
+            rolloverInterval = RolloverInterval.NONE;
         }
+
+        indexNameResolver = new TimeBasedIndexNameResolver(indexName, rolloverInterval);
+    }
+
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public RolloverInterval getRolloverInterval() {
+        return rolloverInterval;
     }
 
     public enum ActionType {
@@ -160,7 +180,7 @@ public class RiverConfig {
     }
 
     String getIndexName() {
-        return indexName;
+        return indexNameResolver.getIndexName();
     }
 
     String getTypeName() {
