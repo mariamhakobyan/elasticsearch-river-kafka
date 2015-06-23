@@ -46,7 +46,6 @@ public class RawMessageProducer extends ElasticSearchProducer {
             ByteBuffer byteBuffer = ByteBuffer.wrap(messageBytes);
             bulkProcessor.add(
                     new ChannelBufferBytesReference(new ByteBufferBackedChannelBuffer(byteBuffer)),
-                    false,
                     riverConfig.getIndexName(),
                     riverConfig.getTypeName()
             );
