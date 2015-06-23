@@ -40,6 +40,7 @@ public class RiverConfig {
     private static final String BULK_SIZE = "bulk.size";
     private static final String CONCURRENT_REQUESTS = "concurrent.requests";
     private static final String ACTION_TYPE = "action.type";
+    private static final String FLUSH_INTERVAL_IN_SECONDS = "flush.interval";
     
     /* StatsD config */
     private static final String STATSD_PREFIX = "prefix";
@@ -57,6 +58,7 @@ public class RiverConfig {
     private int bulkSize;
     private int concurrentRequests;
     private ActionType actionType;
+    private int flushIntervalInSeconds;
     
     private String statsdPrefix;
     private String statsdHost;
@@ -91,12 +93,15 @@ public class RiverConfig {
             concurrentRequests = XContentMapValues.nodeIntegerValue(indexSettings.get(CONCURRENT_REQUESTS), 1);
             actionType = ActionType.fromValue(XContentMapValues.nodeStringValue(indexSettings.get(ACTION_TYPE),
                     ActionType.INDEX.toValue()));
+            flushIntervalInSeconds = XContentMapValues.nodeIntegerValue(indexSettings.get(FLUSH_INTERVAL_IN_SECONDS),
+                    12 * 60 * 60);
         } else {
             indexName = riverName.name();
             typeName = "status";
             bulkSize = 100;
             concurrentRequests = 1;
             actionType = ActionType.INDEX;
+            flushIntervalInSeconds = 12 * 60 * 60;
         }
         
         // Extract StatsD related configuration
@@ -198,6 +203,8 @@ public class RiverConfig {
     ActionType getActionType() {
         return actionType;
     }
+
+    int getFlushIntervalInSeconds() { return flushIntervalInSeconds; }
     
     String getStatsdHost() {
         return statsdHost;

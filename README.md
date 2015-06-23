@@ -66,7 +66,8 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
         "type" : <mapping.type.name>,
         "bulk.size" : <bulk.size>,
         "concurrent.requests" : <concurrent.requests>,
-        "action.type" : <action.type>
+        "action.type" : <action.type>,
+        "flush.interval" : <flush.interval>
     },
     "statsd" : {
         "host" : <statsd.host>,
@@ -95,7 +96,8 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
          "type" : "status",
          "bulk.size" : 100,
          "concurrent.requests" : 1,
-         "action.type" : "index"
+         "action.type" : "index",
+         "flush.interval" : 43200
       },
       "statsd": {
          "host" : "localhost",
@@ -138,9 +140,9 @@ The detailed description of each parameter:
    - `index` : Creates documents in ES with the `value` field set to the received message.
    - `delete` : Deletes documents from ES based on `id` field set in the received message.
    - `raw.execute` : Execute incoming messages as a raw query.
+* `flush.interval` (optional) - The number of seconds after which any remaining messages get flushed to elasticsearch, even if the number of messages has not reached. Default is: `43200` (12 hours)
 
-Flush interval is set to 12 hours by default, so any remaining messages get flushed to elasticsearch even if the number of messages has not reached.
- 
+
 #### Statsd configuration:
 
 * `host` (optional) - The statsd server host name. Default is: `localhost`
