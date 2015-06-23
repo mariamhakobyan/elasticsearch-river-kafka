@@ -99,7 +99,7 @@ public class RiverConfig {
             actionType = ActionType.INDEX;
         }
         
-        // Extract Statsd related configuration
+        // Extract StatsD related configuration
         if (riverSettings.settings().containsKey("statsd")) {
             Map<String, Object> statsdSettings = (Map<String, Object>) riverSettings.settings().get("statsd");
             statsdHost = XContentMapValues.nodeStringValue(statsdSettings.get(STATSD_HOST), "localhost");
