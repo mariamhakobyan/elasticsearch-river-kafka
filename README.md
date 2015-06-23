@@ -97,7 +97,7 @@ curl -XPUT 'localhost:9200/_river/<river-name>/_meta' -d '
          "bulk.size" : 100,
          "concurrent.requests" : 1,
          "action.type" : "index",
-         "flush.interval" : 43200
+         "flush.interval" : "12h"
       },
       "statsd": {
          "host" : "localhost",
@@ -140,7 +140,7 @@ The detailed description of each parameter:
    - `index` : Creates documents in ES with the `value` field set to the received message.
    - `delete` : Deletes documents from ES based on `id` field set in the received message.
    - `raw.execute` : Execute incoming messages as a raw query.
-* `flush.interval` (optional) - The number of seconds after which any remaining messages get flushed to elasticsearch, even if the number of messages has not reached. Default is: `43200` (12 hours)
+* `flush.interval` (optional) - The number of seconds/minutes/hours after which any remaining messages get flushed to elasticsearch, even if the number of messages has not reached. The time values are represented like: "12h", "5s", "3m". Default is: `12h` (12 hours)
 
 
 #### Statsd configuration:
