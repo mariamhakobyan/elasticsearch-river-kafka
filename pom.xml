@@ -48,8 +48,8 @@
         <skipSigning>true</skipSigning>
 
         <!--Dependency versions-->
-        <version.elasticsearch>1.4.0</version.elasticsearch>
-        <version.kafka>0.8.1.1</version.kafka>
+        <version.elasticsearch>1.4.4</version.elasticsearch>
+        <version.kafka>0.8.2.0</version.kafka>
         <version.scala>2.9.2</version.scala>
         <version.slf4j>1.7.2</version.slf4j>
         <version.yammer.metrics.core>2.2.0</version.yammer.metrics.core>
@@ -166,6 +166,9 @@
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${version.maven.failsafe.plugin}</version>
+                <configuration>
+                	<encoding>UTF-8</encoding>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

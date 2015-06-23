@@ -6,8 +6,8 @@ The bulk size (the number of messages to be indexed in one request) and concurre
 The Kafka River also supports consuming messages from multiple Kafka brokers and multiple partitions. 
 
 The plugin uses the latest Kafka and Elasticsearch version.
- * Kafka version 0.8.1.1
- * Elasticsearch version 1.4.0
+ * Kafka version 0.8.2.0
+ * Elasticsearch version 1.4.4
 
 The plugin is periodically updated, if there are newer versions of any dependencies.
 It is available in the [ElasticSearch's official website](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-plugins.html).
