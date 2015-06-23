@@ -15,7 +15,7 @@ It is available in the [ElasticSearch's official website](http://www.elasticsear
 Setup
 ==========
 
-1. Install Kafka if you are working on local environment (See [Apache Kafka Quick Start Guide](http://kafka.apache.org/07/quickstart.html)  for instructions on how to Download and Build.)
+1. Install Kafka if you are working on local environment (See [Apache Kafka Quick Start Guide](http://kafka.apache.org/documentation.html#quickstart)  for instructions on how to Download and Build.)
 
 2. Install the plugin 
 
