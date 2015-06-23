@@ -19,6 +19,7 @@ import kafka.message.MessageAndMetadata;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.ObjectReader;
 import org.codehaus.jackson.type.TypeReference;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -46,10 +47,12 @@ public abstract class ElasticSearchProducer {
     protected BulkProcessor bulkProcessor;
 
     protected RiverConfig riverConfig;
+    protected Stats stats;
 
-    public ElasticSearchProducer(final Client client, final RiverConfig riverConfig, final KafkaConsumer kafkaConsumer) {
+    public ElasticSearchProducer(final Client client, final RiverConfig riverConfig, final KafkaConsumer kafkaConsumer, final Stats stats) {
         this.client = client;
         this.riverConfig = riverConfig;
+        this.stats = stats;
 
         createBulkProcessor(kafkaConsumer);
     }
@@ -59,12 +62,22 @@ public abstract class ElasticSearchProducer {
                 new BulkProcessor.Listener() {
                     @Override
                     public void beforeBulk(long executionId, BulkRequest request) {
+                        stats.flushCount.incrementAndGet();
                         logger.info("Index: {}: Going to execute bulk request composed of {} actions.", riverConfig.getIndexName(), request.numberOfActions());
                     }
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
                         logger.info("Index: {}: Executed bulk composed of {} actions.", riverConfig.getIndexName(), request.numberOfActions());
+
+                        for (BulkItemResponse item : response.getItems()) {
+                            if(item.isFailed()) {
+                                stats.failed.incrementAndGet();
+                            }
+                            else {
+                                stats.succeeded.incrementAndGet();
+                            }
+                        }
 
                         // Commit the kafka messages offset, only when messages have been successfully
                         // inserted into ElasticSearch
@@ -73,6 +86,7 @@ public abstract class ElasticSearchProducer {
 
                     @Override
                     public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
+                        stats.failed.addAndGet(request.numberOfActions());
                         logger.warn("Index: {}: Error executing bulk.", failure, riverConfig.getIndexName());
                     }
                 })

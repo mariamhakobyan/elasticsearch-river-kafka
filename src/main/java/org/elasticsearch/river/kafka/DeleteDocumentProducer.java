@@ -30,8 +30,8 @@ import java.util.Set;
  */
 public class DeleteDocumentProducer extends ElasticSearchProducer {
 
-    public DeleteDocumentProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer) {
-        super(client, riverConfig, kafkaConsumer);
+    public DeleteDocumentProducer(Client client, RiverConfig riverConfig, KafkaConsumer kafkaConsumer, Stats stats) {
+        super(client, riverConfig, kafkaConsumer, stats);
     }
 
     /**

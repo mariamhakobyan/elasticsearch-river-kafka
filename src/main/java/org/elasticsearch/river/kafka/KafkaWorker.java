@@ -40,6 +40,7 @@ public class KafkaWorker implements Runnable {
     private KafkaConsumer kafkaConsumer;
     private ElasticSearchProducer elasticsearchProducer;
     private RiverConfig riverConfig;
+    private Stats stats;
 
     private volatile boolean consume = false;
 
@@ -53,10 +54,12 @@ public class KafkaWorker implements Runnable {
 
     public KafkaWorker(final KafkaConsumer kafkaConsumer,
                        final ElasticSearchProducer elasticsearchProducer,
-                       final RiverConfig riverConfig) {
+                       final RiverConfig riverConfig,
+                       final Stats stats) {
         this.kafkaConsumer = kafkaConsumer;
         this.elasticsearchProducer = elasticsearchProducer;
         this.riverConfig = riverConfig;
+        this.stats = stats;
     }
 
     @Override
@@ -102,6 +105,11 @@ public class KafkaWorker implements Runnable {
 
                 messageSet.add(messageAndMetadata);
                 counter++;
+                stats.messagesReceived.incrementAndGet();
+                stats.lastCommitOffsetByPartitionId.put(
+                        messageAndMetadata.partition(),
+                        messageAndMetadata.offset()
+                );
 
                 if(counter >= riverConfig.getBulkSize()) {
                     elasticsearchProducer.addMessagesToBulkProcessor(messageSet);
