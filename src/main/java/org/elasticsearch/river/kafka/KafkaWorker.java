@@ -47,7 +47,7 @@ public class KafkaWorker implements Runnable {
     private static final ESLogger logger = ESLoggerFactory.getLogger(KafkaWorker.class.getName());
 
     /**
-     * For randomly selecting the partition of a kafka partition.
+     * For randomly selecting the kafka partition.
      */
     private Random random = new Random();
 

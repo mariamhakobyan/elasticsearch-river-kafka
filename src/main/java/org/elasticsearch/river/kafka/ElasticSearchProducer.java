@@ -100,7 +100,7 @@ public abstract class ElasticSearchProducer {
      * For the given messages executes the specified operation type and adds the results bulk processor queue, for
      * processing later when the size of bulk actions is reached.
      *
-     * @param messageSet given set of messages
+     * @param messageAndMetadata given message
      */
     public abstract void addMessagesToBulkProcessor(final MessageAndMetadata messageAndMetadata);
 
