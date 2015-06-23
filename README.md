@@ -140,7 +140,7 @@ The detailed description of each parameter:
    - `index` : Creates documents in ES with the `value` field set to the received message.
    - `delete` : Deletes documents from ES based on `id` field set in the received message.
    - `raw.execute` : Execute incoming messages as a raw query.
-* `flush.interval` (optional) - The number of seconds/minutes/hours after which any remaining messages get flushed to elasticsearch, even if the number of messages has not reached. The time values are represented like: "12h", "5s", "3m". Default is: `12h` (12 hours)
+* `flush.interval` (optional) - The number of seconds/minutes/hours after which any remaining messages get flushed to elasticsearch, even if the number of messages has not reached. The time values are represented like: "12h", "3m", "5s". Default is: `12h` (12 hours)
 
 
 #### Statsd configuration:

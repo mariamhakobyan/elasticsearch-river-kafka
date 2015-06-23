@@ -102,7 +102,7 @@ public abstract class ElasticSearchProducer {
      *
      * @param messageSet given set of messages
      */
-    public abstract void addMessagesToBulkProcessor(final Set<MessageAndMetadata> messageSet);
+    public abstract void addMessagesToBulkProcessor(final MessageAndMetadata messageAndMetadata);
 
     public void closeBulkProcessor() {
         bulkProcessor.close();

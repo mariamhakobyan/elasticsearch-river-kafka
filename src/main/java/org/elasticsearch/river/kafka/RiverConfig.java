@@ -96,7 +96,7 @@ public class RiverConfig {
             concurrentRequests = XContentMapValues.nodeIntegerValue(indexSettings.get(CONCURRENT_REQUESTS), 1);
             actionType = ActionType.fromValue(XContentMapValues.nodeStringValue(indexSettings.get(ACTION_TYPE),
                     ActionType.INDEX.toValue()));
-            flushInterval = TimeValue.parseTimeValue(XContentMapValues.nodeStringValue(indexSettings.get(FLUSH_INTERVAL), ""), FLUSH_12H);
+            flushInterval = TimeValue.parseTimeValue(XContentMapValues.nodeStringValue(indexSettings.get(FLUSH_INTERVAL), "12h"), FLUSH_12H);
         } else {
             indexName = riverName.name();
             typeName = "status";
