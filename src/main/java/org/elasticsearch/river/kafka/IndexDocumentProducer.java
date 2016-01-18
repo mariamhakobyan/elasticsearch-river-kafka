@@ -53,7 +53,8 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
 
             String message = null;
             IndexRequest request = null;
-
+        	String sdate = Calendar.getInstance().get(Calendar.YEAR) + "-" + (Calendar.getInstance().get(Calendar.MONTH) + 1)+ "-" + Calendar.getInstance().get(Calendar.DATE);
+            
             switch (riverConfig.getMessageType()) {
                 case STRING:
                     message = XContentFactory.jsonBuilder()
@@ -61,13 +62,13 @@ public class IndexDocumentProducer extends ElasticSearchProducer {
                             .field("value", new String(messageBytes, "UTF-8"))
                             .endObject()
                             .string();
-                    request = Requests.indexRequest(riverConfig.getIndexName()).
+                    request = Requests.indexRequest(riverConfig.getIndexName()+sdate).
                             type(riverConfig.getTypeName()).
                             source(message);
                     break;
                 case JSON:
                     final Map<String, Object> messageMap = reader.readValue(messageBytes);
-                    request = Requests.indexRequest(riverConfig.getIndexName()).
+                    request = Requests.indexRequest(riverConfig.getIndexName()+sdate).
                             type(riverConfig.getTypeName()).
                             source(messageMap);
             }
